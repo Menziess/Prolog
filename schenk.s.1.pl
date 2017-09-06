@@ -2,15 +2,63 @@
 % 06-09-17
 % Stefan Schenk, 11881798, stefan_schenk@hotmail.com
 
-% Opg 1
 
-/*
- *
- */
+% Opg 1 - De studievereniging organiseert een pannenkoekenfeestje.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+/* facts */
 has_ta(alice, mary). 
 has_ta(bob, mary). 
 has_ta(cecilia, paul).
+has_ta(stefan, ta).
 
 has_favourite_topping(peter, nutella). 
-has_favourite_topping(paul, strawberry jam). 
+has_favourite_topping(paul, 'strawberry jam'). 
 has_favourite_topping(mary, caramel).
+has_favourite_topping(ta, sugar).
+
+/* answer/1 kijkt of de topping TA van de student die gegeven is, gelijk 
+ * is aan de topping die als input meegegeven wordt. Bijvoorbeeld: 
+ *
+ * ?- answer(stefan).
+ * The favourite pancake topping of the TA of this student is sugar.
+ * 
+ * true. 
+ */
+answer(Student) :-
+  has_ta(Student, TA),
+  write('The favourite pancake topping of the TA of this student is '), 
+  read(Topping), % input
+  nl,
+  has_favourite_topping(TA, Topping). % topping equals ? true : false 
+
+
+% Opg. 2 - Bepaal voor de volgende termen of het lijsten zijn.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+isList([]).
+isList([_]).
+% 1. [1, 2| 3]
+% 2. [1| [2, 3]]
+% 3. [[1]| 2, 3]
+% 4. [[1]| [2, 3]]
+% 5. [1| [2| 3]]
+% 6. [1| [2| [3]]]
+% 7. [1, 2| [3]]
+% 8. [[]| []]
+
+
+% Opg. 3 - Beschouw het volgende simpele programmaatje:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+whatisthis([]). 
+whatisthis([_, b| L]) :- 
+  whatisthis(L).
+
+% Onder welke voorwaarden slaagt een query:
+% ?- whatisthis(X)?
+
+
+% Opg. 4 - Bij deze opgave is member/2 dat test of een term een element 
+% is van een lijst de enige built-in die je mag gebruiken.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

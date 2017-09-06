@@ -43,7 +43,7 @@ opgave2 :-
  * ?- evenMembers([1,2,3,4,5], L). geeft L = [2,4] 
  * ?- evenMembers([a,b,c,d,e,f], L). geeft L = [b,d,f]
  * 
- * ???
+ * 
  * Dan wordt gecheckt of de lijst leeg is, or maar 1 element heeft.
  */
 evenMembers([], []).
@@ -68,3 +68,22 @@ oddMembers([], []).
 oddMembers([_], []).
 oddMembers([Odd,_|Tail], [Odd|NT]) :-
   oddMembers(Tail, NT).
+
+opgave4 :- 
+  write('Geef een lijst: '),
+  nl, 
+  read(List),
+  write('List even members: '),
+  oddMembers(List).
+
+/**
+ * Opg. 5 Implementeer een predicaat lastMember/2 zodanig dat lastMember
+ * voor gegeven lijst List zijn laatste member LastMember geeft 
+ * (in het geval van een lege lijst moet lastMember falen).
+ * 
+ * 
+ */
+lastMember([], LastMember) :-
+  fail.
+lastMember([_,Tail], LastMember) :-
+  lastMember()
