@@ -1,6 +1,6 @@
-% PSS Huiswerk # <nummer van de desbetreffende aflevering>
+% PSS Huiswerk #
 % <datum>
-% <naam>, <student-nummer>, <e-mail-adres>
+% Stefan Schenk, 11881798, stefan_schenk@hotmail.com
 
 /* Introductie methodes */
 f(X, Y, Z) :-
@@ -35,12 +35,23 @@ child(Child, Parent) :-
 
 % some important groceries
 
-% concatinate a mixture of lists and / or elements
+% concatinate a mixture of lists and / or elements recursively
+concat_lists([], L, L).
 concat_lists([Elem | List1], List2, [Elem | List3]) :-
   concat_lists(List1, List2, List3).
+
+% Print list
+show(List) :-
+  member(Element, List),
+  write(Element),
+  nl.
+  fail.
+
+
 
 /** <examples>
 ?- List = [apple, pear, cucumber, [1, 2, 3], []].
 ?- reverse(List).
 ?- length(List).
+?- concat_lists([1, 2], [a, b], L).
 */
