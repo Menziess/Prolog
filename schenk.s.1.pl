@@ -15,6 +15,13 @@
 | The favourite pancake topping of the TA of this student is 'stroop met suiker'.
 | 
 | true.
+|
+| of:
+|
+| ?- answer(stefan).
+| The favourite pancake topping of the TA of this student is 'smeerworst'.
+| 
+| false.
 */
   
 has_ta(alice, mary). 
@@ -41,7 +48,7 @@ answer(Student) :-
 |--------------------------------------------------------------------------
 |
 | Om vast te stellen of verschillende input lists waren, heb ik de 
-| predicate is_list/1 gebruikt.
+| ingebouwde predicate is_list/1 gebruikt.
 */
 
 % 1. is_list([1, 2| 3]).     : false  : bevat 1 en conditional
@@ -68,33 +75,62 @@ whatisthis([]).
 whatisthis([_, b| L]) :- 
   whatisthis(L).
 
+% whatisthis([]).             : slaagt
+% whatisthis([wildcard, b]).  : slaagt
+
 /*
 |--------------------------------------------------------------------------
-| Opg. 4 - Bij deze opgave is member/2 dat test of een term een element 
-| is van een lijst de enige built-in die je mag gebruiken.
+| Opg. 4 - Schrijf een Prolog-programma dat implementaties bevat van vier 
+| predicaten: remove first/3, remove last/3, remove all/3 en remove list/3.
+| De eerste is bedoeld om het eerste voorkomen van een gegeven atoom in een 
+| gegeven lijst te verwijderen. Het atoom is het eerste argument, de te 
+| bewerken lijst het tweede argument, en het resultaat het derde.
+|--------------------------------------------------------------------------
+| 
+| Ik heb als eerste de base cases gedefinieerd, daarna gekeken in welke
+| staat het programma zou verkeren als er 1 element gevonden werd. 
+| Vervolgens het programma verder laten zoeken of de recursie af laten
+| maken.
+*/
+remove_first(_, [], []).                              % Base case
+remove_first(Element, [Element|Tail], Tail).          % Het element bevind zich op de eerste positie van de list, dus tail is het resultaat
+remove_first(Element, [Head|Tail], [Head|Result]) :-  % Het element bevind zich niet op de eerste positie, dus wordt er verder gezocht
+  remove_first(Element, Tail, Result).                % Op recursieve wijze wordt het element gezocht
+
+
+remove_last(_, [], []).                               % Base case
+remove_last(Element, [Element|Tail], Tail) :-         % Het element bevind zich op de eerste positie
+  not(member(Element, Tail)).                         % en niet in de tail
+remove_last(Element, [Head|Tail], [Head|Result]) :-   % Het element bevind zich niet op de eerste positie, dus wordt er verder gezocht
+  remove_last(Element, Tail, Result).                 % Op recursieve wijze wordt het element gezocht
+
+
+remove_all(_, [], []).                                % Base case
+remove_all(Element, [Element|Tail], Result) :-        % Het element bevind zich op de eerste positie
+  remove_all(Element, Tail, Result).                  % Verwijder element en ga verder
+remove_all(Element, [Head|Tail], [Head|Result]) :-    % Het element bevind zich misschien in de tail
+  remove_all(Element, Tail, Result).                  % Op recursieve wijze wordt het element gezocht
+
+
+remove_list([], [], []).
+remove_list([First], List, Result) :-
+  remove_all(First, List, Result).
+remove_list([First|Rest], List, Result) :-
+  remove_list(Rest, List, Result).
+
+
+/*
+|--------------------------------------------------------------------------
+| Opg. 5 - Geef een Prolog-implementatie voor een operatie intersect/3 
+| voor het bepalen van een lijst die de elementen bevat die twee gegeven 
+| lijsten gemeenschappelijk hebben. De bedoeling is dat het resultaat van 
+| al deze gemeenschappelijke elementen slechts een representant herbergt. 
 |--------------------------------------------------------------------------
 |
 |   
 */
 
-/*
-
-Opg. 4 Bij deze opgave is member/2 dat test of een term een element is van een lijst de enige built-in die je mag gebruiken.2 Schrijf een Prolog-programma dat implementaties bevat van vier predicaten:
-remove first/3, remove last/3, remove all/3 en remove list/3.
-De eerste is bedoeld om het eerste voorkomen van een gegeven atoom in een gegeven lijst te verwijderen. Het atoom is het eerste argument, de te bewerken lijst het tweede argument, en het resultaat het derde. Bijvoorbeeld:
-
-• ?- remove first(a, [b,a,c,a,d], X) levert X = [b,c,a,d]. (10 ptn)
-Als het eerste argument helemaal niet voorkomt in de lijst in het tweede argument dan moet deze lijst gewoon in tact blijven. Het predicaat remove last moet analoog werken voor het laatste voorkomen van het eerste argument in de te bewerken lijst. Bijvoorbeeld:
-
-• ?- remove last(a, [b,a,c,a,d], X) levert X = [b,a,c,d]. (10 ptn)
-Wederom moet deze operatie de lijst ongeroerd laten indien het eerste argument niet in de lijst voorkomt. remove all/3 dient alle voorkomens van het eerste argument uit de te bewerken lijst te verwijderen. Bijvoorbeeld:
-
-• ?- remove all(a, [b,a,c,a,d], X) levert X = [b,c,d]. (10 ptn)
-De laatste operatie, remove list/3, veronderstelt een lijst als eerste argument. Het resultaat, het derde argument, is wat van de te bewerken lijst (het tweede argument) overblijft als alle voorkomens van elementen van het eerste argument uit het tweede argument verwijderd zijn. Bijvoorbeeld:
-
-• ?- remove list([a,b], [b,a,c,a,d], X) levert X = [c,d]. (10 ptn)
-
-Opg. 5 3 Bij deze opgave is wederom member/2 de enige built-in die je mag gebruiken. Geef een (15 ptn) Prolog-implementatie voor een operatie intersect/3 voor het bepalen van een lijst die de elementen bevat die twee gegeven lijsten gemeenschappelijk hebben. De bedoeling is dat het resultaat van al deze gemeenschappelijke elementen slechts ´e´en representant herbergt. Bijvoorbeeld:
-
-• ?- intersect([a,c,a,b], [d,b,a,b], X) levert X = [a,b] of X = [b,a].
-*/
+intersect([], [], []).
+intersect([Head|Tail], List, Result) :-
+  
+% ?- intersect([a,c,a,b], [d,b,a,b], X) levert X = [a,b] of X = [b,a].

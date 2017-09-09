@@ -40,18 +40,20 @@ concat_lists([], L, L).
 concat_lists([Elem | List1], List2, [Elem | List3]) :-
   concat_lists(List1, List2, List3).
 
+/* example:
+concat_lists([1, 2], [a, b], X).        : rule where X is passed as a shared memory address
+  concat_lists([2], [a, b], X).         : rule " "
+    concat_lists([], [a, b], X).        : fact list is empty so it hits the base case and X is matched
+    concat_lists([], [a, b], [a, b]).   : fact = true, the shared memory address now contains [a, b]
+  concat_lists([Elem = 2], [a, b], [Elem = 2 | [a, b] ]).    : Elem 2 is merged with list [a, b] and shared with previous stack memory address
+concat_lists([Elem = 1, Tail = [2]], [a, b], [Elem = 1 | [2, a, b] ])
+
+The return value is the list: X = [1, 2, a, b]
+*/
+
 % Print list
 show(List) :-
   member(Element, List),
   write(Element),
-  nl.
+  nl,
   fail.
-
-
-
-/** <examples>
-?- List = [apple, pear, cucumber, [1, 2, 3], []].
-?- reverse(List).
-?- length(List).
-?- concat_lists([1, 2], [a, b], L).
-*/
