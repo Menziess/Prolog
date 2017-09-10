@@ -26,8 +26,8 @@ has_favourite_topping(mary, 'caramel').
 has_favourite_topping(mattijs, 'stroop met suiker'). % Mattijs houdt van stroop met suiker
 
 answer(Student) :-
-  has_ta(Student, TA),
-  has_favourite_topping(TA, Topping),
+  has_ta(Student, TA), % De TA variable wordt geinstantieerd met 'mattijs'
+  has_favourite_topping(TA, Topping), % De Topping variable wordt geinstantieerd met 'stroop met suiker'
   write('The favourite pancake topping of the TA of this student is '),
   write(Topping),
   write('.').
@@ -128,12 +128,13 @@ remove_list(List, [Head|Tail], [Head|Result]) :-      % Anders hoeft het element
 | al deze gemeenschappelijke elementen slechts een representant herbergt. 
 |--------------------------------------------------------------------------
 |
-|   
+| Ik heb geprobeerd de logica uit remove_list/3 te gebruiken, maar helaas
+| worden duplicates er niet uit gefilterd.
 */
 
 intersect(_, [], []).                                 % Base case
 intersect(List, [Head|Tail], Result) :-               % 
-  not(member(Head, List)),                            % Kijk of het element zich niet in de list bevind
+  not(member(Head, List)),                            % Kijk of het element zich NIET in de list bevind
   intersect(List, Tail, Result).                      % Verwijder het element uit de list
 intersect(List, [Head|Tail], [Head|Result]) :-        % Anders hoeft het element niet verwijderd te worden
   intersect(List, Tail, Result).
