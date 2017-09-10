@@ -8,20 +8,11 @@
 | Opg 1 - De studievereniging organiseert een pannenkoekenfeestje.
 |--------------------------------------------------------------------------
 |
-| answer/1 kijkt of de topping TA van de student die gegeven is, gelijk 
-| is aan de topping die als input meegegeven wordt. Bijvoorbeeld: 
+| De output zou er als volgt uit moeten zien: 
 |
 | ?- answer(stefan).
-| The favourite pancake topping of the TA of this student is 'stroop met suiker'.
-| 
+| The favourite pancake topping of the TA of this student is stroop met suiker.
 | true.
-|
-| of:
-|
-| ?- answer(stefan).
-| The favourite pancake topping of the TA of this student is 'smeerworst'.
-| 
-| false.
 */
   
 has_ta(alice, mary). 
@@ -32,15 +23,14 @@ has_ta(stefan, mattijs). % Mattijs is mijn TA
 has_favourite_topping(peter, 'nutella'). 
 has_favourite_topping(paul, 'strawberry jam'). 
 has_favourite_topping(mary, 'caramel').
-has_favourite_topping(mattijs, 'stroop met suiker'). % Mattijs houdt van 
+has_favourite_topping(mattijs, 'stroop met suiker'). % Mattijs houdt van stroop met suiker
 
 answer(Student) :-
   has_ta(Student, TA),
-  write('The favourite pancake topping of the TA of this student is '), 
-  read(Topping), % user input
-  nl,
-  has_favourite_topping(TA, Topping).
-
+  has_favourite_topping(TA, Topping),
+  write('The favourite pancake topping of the TA of this student is '),
+  write(Topping),
+  write('.').
 
 /*
 |--------------------------------------------------------------------------
@@ -92,18 +82,23 @@ whatisthis([_, b| L]) :-
 | Vervolgens het programma verder laten zoeken of de recursie af laten
 | maken.
 */
-remove_first(_, [], []).                              % Base case
+
 remove_first(Element, [Element|Tail], Tail).          % Het element bevind zich op de eerste positie van de list, dus tail is het resultaat
 remove_first(Element, [Head|Tail], [Head|Result]) :-  % Het element bevind zich niet op de eerste positie, dus wordt er verder gezocht
   remove_first(Element, Tail, Result).                % Op recursieve wijze wordt het element gezocht
 
+                                                      % Output: 
+                                                      % ?- remove_first(a, [b,a,c,a,d], X).
+                                                      % X = [b, c, a, d] .
 
-remove_last(_, [], []).                               % Base case
 remove_last(Element, [Element|Tail], Tail) :-         % Het element bevind zich op de eerste positie
   not(member(Element, Tail)).                         % en niet in de tail
 remove_last(Element, [Head|Tail], [Head|Result]) :-   % Het element bevind zich niet op de eerste positie, dus wordt er verder gezocht
   remove_last(Element, Tail, Result).                 % Op recursieve wijze wordt het element gezocht
 
+                                                      % Output:
+                                                      % ?- remove_last(a, [b,a,c,a,d], X).
+                                                      % X = [b, a, c, d] .
 
 remove_all(_, [], []).                                % Base case
 remove_all(Element, [Element|Tail], Result) :-        % Het element bevind zich op de eerste positie
@@ -111,12 +106,16 @@ remove_all(Element, [Element|Tail], Result) :-        % Het element bevind zich 
 remove_all(Element, [Head|Tail], [Head|Result]) :-    % Het element bevind zich misschien in de tail
   remove_all(Element, Tail, Result).                  % Op recursieve wijze wordt het element gezocht
 
+                                                      % Output:
+                                                      % ?- remove_all(a, [b,a,c,a,d], X).
+                                                      % X = [b, c, d] .
 
-remove_list([], [], []).
-remove_list([First], List, Result) :-
-  remove_all(First, List, Result).
-remove_list([First|Rest], List, Result) :-
-  remove_list(Rest, List, Result).
+remove_list(_, [], []).                               % Base case
+remove_list(List, [Head|Tail], Result) :-             %
+  member(Head, List), 
+  remove_list(List, Tail, Result), !.
+remove_list(List, [Head|Tail], [Head|Result]) :- 
+  remove_list(List, Tail, Result).
 
 
 /*
@@ -130,7 +129,16 @@ remove_list([First|Rest], List, Result) :-
 |   
 */
 
-intersect([], [], []).
-intersect([Head|Tail], List, Result) :-
+% intersect([], [], []).
+% intersect([Head|Tail], List, Result) :-
   
 % ?- intersect([a,c,a,b], [d,b,a,b], X) levert X = [a,b] of X = [b,a].
+
+inter([], _, []).
+
+inter([H1|T1], L2, [H1|Res]) :-
+    member(H1, L2),
+    inter(T1, L2, Res).
+
+inter([_|T1], L2, Res) :-
+    inter(T1, L2, Res).
