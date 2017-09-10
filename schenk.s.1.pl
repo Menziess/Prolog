@@ -111,13 +111,15 @@ remove_all(Element, [Head|Tail], [Head|Result]) :-    % Het element bevind zich 
                                                       % X = [b, c, d] .
 
 remove_list(_, [], []).                               % Base case
-remove_list(List, [Head|Tail], Result) :-             %
-  member(Head, List), 
-  remove_list(List, Tail, Result), !.
-remove_list(List, [Head|Tail], [Head|Result]) :- 
+remove_list(List, [Head|Tail], Result) :-             % 
+  member(Head, List),                                 % Kijk of het element zich in de list bevind
+  remove_list(List, Tail, Result).                    % Verwijder het element uit de list
+remove_list(List, [Head|Tail], [Head|Result]) :-      % Anders hoeft het element niet verwijderd te worden
   remove_list(List, Tail, Result).
 
-
+                                                      % Output:
+                                                      % ?- remove_list([a,b], [b,a,c,a,d], X).
+                                                      % X = [c, d] .
 /*
 |--------------------------------------------------------------------------
 | Opg. 5 - Geef een Prolog-implementatie voor een operatie intersect/3 
@@ -129,16 +131,12 @@ remove_list(List, [Head|Tail], [Head|Result]) :-
 |   
 */
 
-% intersect([], [], []).
-% intersect([Head|Tail], List, Result) :-
-  
-% ?- intersect([a,c,a,b], [d,b,a,b], X) levert X = [a,b] of X = [b,a].
-
-inter([], _, []).
-
-inter([H1|T1], L2, [H1|Res]) :-
-    member(H1, L2),
-    inter(T1, L2, Res).
-
-inter([_|T1], L2, Res) :-
-    inter(T1, L2, Res).
+intersect(_, [], []).                                 % Base case
+intersect(List, [Head|Tail], Result) :-               % 
+  not(member(Head, List)),                            % Kijk of het element zich niet in de list bevind
+  intersect(List, Tail, Result).                      % Verwijder het element uit de list
+intersect(List, [Head|Tail], [Head|Result]) :-        % Anders hoeft het element niet verwijderd te worden
+  intersect(List, Tail, Result).
+                                                      % Output: (haalt de duplicates er alleen niet uit)
+                                                      % ?- intersect([a,c,a,b], [d,b,a,b], X).
+                                                      % X = [b, a, b] .
