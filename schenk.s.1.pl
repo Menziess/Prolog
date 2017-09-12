@@ -132,12 +132,14 @@ remove_list(List, [Head|Tail], [Head|Result]) :-      % Anders hoeft het element
 | worden duplicates er niet uit gefilterd.
 */
 
-intersect(_, [], []).                                 % Base case
-intersect(List, [Head|Tail], Result) :-               % 
-  not(member(Head, List)),                            % Kijk of het element zich NIET in de list bevind
-  intersect(List, Tail, Result).                      % Verwijder het element uit de list
-intersect(List, [Head|Tail], [Head|Result]) :-        % Anders hoeft het element niet verwijderd te worden
-  intersect(List, Tail, Result).
-                                                      % Output: (haalt de duplicates er alleen niet uit)
-                                                      % ?- intersect([a,c,a,b], [d,b,a,b], X).
-                                                      % X = [b, a, b] .
+intersect([], _, []).           % basis 1 
+intersect([H|T], L, NL) :-      % recursie 1 
+  member(H,T),                  % kijkt of de head H van de eerste lijst een tweede keer voorkomt in deze lijst.
+  intersect(T, L, NL).          % In dat geval herhalen we de procedure voor de tail T van de lijst.
+intersect([H|T], L, [H|NT]) :-  % recursie 2
+  member(H,L),                  % kijkt nu of H wel voorkomt in de tweede lijst (L).
+  intersect(T, L, NT).          % In dat geval nemen we H op in het resultaat, en herhalen intersect/3 voor T om de rest van het resultaat te bepalen.
+intersect([_|T], L, NL) :-      % recursie 3 is voor de overige gevallen: H komt niet verder voor in de eerste lijst en ook niet in de tweede.
+  intersect(T, L, NL).          % In dat geval wordt H niet opgenomen in het resultaat en loopt de recursie verder met de rest van de eerste lijst T.
+
+ 
