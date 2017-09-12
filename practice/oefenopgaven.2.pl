@@ -3,7 +3,8 @@
 % Test of een gegeven lijst een even aantal elementen heeft.
 
 evenList([]).
-evenList([_,_|T]):- evenList(T).
+evenList([_,_|T]) :-
+    evenList(T).
 
 % Basis (het simpelste geval): de lege lijst is een lijst met een even
 % aantal elementen.
@@ -27,7 +28,8 @@ evenList([_,_|T]):- evenList(T).
 % Bepaalt het laatste element van een lijst.
 
 lastMember([Z], Z).
-lastMember([_|T], Z):- lastMember(T, Z).
+lastMember([_|T], Z) :- 
+    lastMember(T, Z).
 
 % Basis: Als een lijst 1 element heeft dan is dat tevens het laatste
 % element (Z).
@@ -55,7 +57,8 @@ lastMember([_|T], Z):- lastMember(T, Z).
 % in het tweede argument en dat laatste element zelf als derde argument.
 
 popBot([Z], [], Z).
-popBot([H|T], [H|NT], Z):- popBot(T, NT, Z).
+popBot([H|T], [H|NT], Z) :- 
+    popBot(T, NT, Z).
 
 % Basis: Als een lijst slechts 1 element heeft dan is het resultaat van
 % het poppen de lege lijst en het laatste element dat enige
