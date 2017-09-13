@@ -83,6 +83,7 @@ whatisthis([_, b| L]) :-
 | maken.
 */
 
+remove_first(_, [], []).                                                      
 remove_first(Element, [Element|Tail], Tail).          % Het element bevind zich op de eerste positie van de list, dus tail is het resultaat
 remove_first(Element, [Head|Tail], [Head|Result]) :-  % Het element bevind zich niet op de eerste positie, dus wordt er verder gezocht
   remove_first(Element, Tail, Result).                % Op recursieve wijze wordt het element gezocht
@@ -91,8 +92,9 @@ remove_first(Element, [Head|Tail], [Head|Result]) :-  % Het element bevind zich 
                                                       % ?- remove_first(a, [b,a,c,a,d], X).
                                                       % X = [b, c, a, d] .
 
+remove_last(_, [], []).                                                      
 remove_last(Element, [Element|Tail], Tail) :-         % Het element bevind zich op de eerste positie
-  not(member(Element, Tail)).                         % en niet in de tail
+  \+ member(Element, Tail).                           % en niet in de tail
 remove_last(Element, [Head|Tail], [Head|Result]) :-   % Het element bevind zich niet op de eerste positie, dus wordt er verder gezocht
   remove_last(Element, Tail, Result).                 % Op recursieve wijze wordt het element gezocht
 
