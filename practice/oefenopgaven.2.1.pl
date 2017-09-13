@@ -135,25 +135,19 @@ drawGrid(N, M) :-
  * aantal elementen.
  */
 
-partList(_, [], [], []).
-partList(Mid, [H|T], [H|List1], List2) :-
-  length(T, Length),
-  Length > Mid,
-  partList(Mid, T, List1, List2).
-partList(Mid, [H|T], List1, [H|List2]) :-
-  partList(Mid, T, List1, List2).
-
-
 split([], [], []).
 split(List, L1, L2) :-
   length(List, Length),
   mod(Length, 2) =:= 0,
   Half is div(Length, 2),
-  partList(Half, List, L1, L2).
-
-
-  % Mod is length(T) mod 2,
-  % write('even').
+  split(Half, List, L1, L2).
+split(_, [], [], []).
+split(Mid, [H|T], [H|List1], List2) :-
+  length(T, Length),
+  Length >= Mid,
+  split(Mid, T, List1, List2).
+split(Mid, [H|T], List1, [H|List2]) :-
+  split(Mid, T, List1, List2).
 
 /**
  * Opg. 7 Implementeer een predicaat fac/2 dat de faculteit n! van getal een 
@@ -173,3 +167,17 @@ fac(_, 1).
  * De eerste is tamelijk eenvoudig, de tweede lastiger, maar wel belangrijk.
  */
 
+fibonacci(N, 1) :-
+  N < 2.
+fibonacci(N, R) :-
+  N1 is N - 1,
+  N2 is N - 2,
+  fibonacci(N1, R1),
+  fibonacci(N2, R2),
+  R is R2 + R1.
+
+fastfibo(N, R) :-
+  print('todo').
+
+% (1 + sqr(5))^n - (1 - sqrt(5))^n
+% / 2^n * sqrt(5)
