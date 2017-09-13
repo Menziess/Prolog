@@ -176,8 +176,10 @@ fibonacci(N, R) :-
   fibonacci(N2, R2),
   R is R2 + R1.
 
+fastfibo(N, 1) :-
+  N < 2.
 fastfibo(N, R) :-
-  print('todo').
-
-% (1 + sqr(5))^n - (1 - sqrt(5))^n
-% / 2^n * sqrt(5)
+  SqrtOfFive is sqrt(5),
+  pow((1 + SqrtOfFive), N, Pow1),
+  pow((1 - SqrtOfFive), N, Pow2),
+  R is (Pow1 - Pow2) / N**2 * sqrt(5).
