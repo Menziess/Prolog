@@ -8,13 +8,22 @@
 | Opg 1 - Ulle Endriss: opg. 3.14. Hoe kan je de beste kandidaat in een 
 | quiz over het vinden van woorden verslaan? 
 |--------------------------------------------------------------------------
-| 
+| TODO:
+| cover should check each element k times.
+| topsolution should start at the highest possible score.
+| Explain solution with 3 lists.
 */
 
 cover([], _).
-cover([H|T], List) :- 
-  member(H, List),                  % Checks if element is covered by List
-  cover(T, List).     
+cover([H|T], [H|T1]) :-
+  cover(T, T1).
+cover(List, [H1|T1], Temp) :- 
+  cover(List, T1).
+
+% cover([], _).
+% cover([H|T], List) :- 
+%   member(H, List),                  % Checks if element is covered by List
+%   cover(T, List).    
 
 solution(List, Word, Score) :-
   ensure_loaded('assets/words'),    % Laadt de words 1 keer
@@ -27,7 +36,8 @@ topsolution([], _, 0).
 topsolution(List, Word, Score) :-
   solution(List, Word, Score).
 
-% Example: [y,c,a,l,b,e,o,s,x]
+% Try at least: [y,c,a,l,b,e,o,s,x]
+% Try 2 other lists.
 
 /*
 |--------------------------------------------------------------------------
@@ -38,10 +48,12 @@ topsolution(List, Word, Score) :-
 | de formule (-b +/- sqrt(b^2 - 4ac)) / 2a
 */
 
-% solveQuadratic/2 
-% eerste argument een lijst met de gegeven coefficienten zijn (a, b en c) en
-% het tweede argument de uitkomst in de vorm van een lijst met 2, 1 of 0 
-% elementen die de nulpunten weergeven.
+solveQuadratic([A, B, C], [Zero1|Zero2]) :-
+  Discriminant is B**2 - 4 * A * C,
+  Discriminant >= 0,
+  sqrt(Discriminant, Root),
+  Zero1 is (- B + Root) / (2*A),
+  Zero2 is (- B - Root) / (2*A).
 
 /*
 |--------------------------------------------------------------------------
