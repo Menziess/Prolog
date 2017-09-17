@@ -5,8 +5,11 @@
       "name": "Debug Prolog Files",
       "type": "prolog",
       "request": "launch",
-      "runtimeExecutable": "/usr/bin/swipl",
-      "runtimeArgs": [],
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-c",
+        "swipl"
+      ],
       "env": {},
       "program": "${file}",
       "cwd": "${fileDirname}",

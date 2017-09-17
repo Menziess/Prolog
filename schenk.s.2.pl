@@ -8,36 +8,65 @@
 | Opg 1 - Ulle Endriss: opg. 3.14. Hoe kan je de beste kandidaat in een 
 | quiz over het vinden van woorden verslaan? 
 |--------------------------------------------------------------------------
-| TODO:
-| cover should check each element k times.
 | topsolution should start at the highest possible score.
 | Explain solution with 3 lists.
 */
 
-cover([], _).
-cover([H|T], [H|T1]) :-
-  cover(T, T1).
-cover(List, [H1|T1], Temp) :- 
-  cover(List, T1).
+% Predicaat uit assignment 1
+remove_first(_, [], []).                                                      
+remove_first(Element, [Element|Tail], Tail).
+remove_first(Element, [Head|Tail], [Head|Result]) :-
+  remove_first(Element, Tail, Result). 
 
-% cover([], _).
-% cover([H|T], List) :- 
-%   member(H, List),                  % Checks if element is covered by List
-%   cover(T, List).    
+cover([], _).
+cover([H|T], List) :-               
+  member(H, List),                      % Als het element in de lijst zit
+  remove_first(H, List, Remainder), !,  % Verwijder het
+  cover(T, Remainder).                  % Ga door met het volgende element.
 
 solution(List, Word, Score) :-
-  ensure_loaded('assets/words'),    % Laadt de words 1 keer
-  word(Word),                       % We zoeken een woord
-  string_chars(Word, Letters),      % Van dat woord hebben we de letters nodig
-  length(Letters, Score),           % Letters moet gelijk zijn aan de Score
-  cover(Letters, List).             % De letters moeten in de lijst voor komen
+  ensure_loaded('assets/words'),        % Laadt de words 1 keer
+  word(Word),                           % We zoeken een woord
+  string_chars(Word, Letters),          % Van dat woord hebben we de letters nodig
+  length(Letters, Score),               % Letters moet gelijk zijn aan de Score
+  cover(Letters, List).                 % De letters moeten in de lijst voor komen
 
 topsolution([], _, 0).
 topsolution(List, Word, Score) :-
-  solution(List, Word, Score).
+  length(List, TargetScore),
+  topsolution(List, Word, Score, TargetScore).
+topsolution(List, Word, Score, TargetScore) :-
+  write("Finding word of "), write(TargetScore), write(" characters..."), nl,
+  solution(List, Word, TargetScore) ->
+  (
+    string_chars(Word, Letters),
+    length(Letters, Score)
+  ) ; (
+    Target is TargetScore - 1,
+    topsolution(List, Word, Score, Target)
+  ).
 
-% Try at least: [y,c,a,l,b,e,o,s,x]
-% Try 2 other lists.
+% ?- topsolution([y,c,a,l,b,e,o,s,x], Word, Score).
+% Finding word of 9 characters...
+% Finding word of 8 characters...
+% Finding word of 7 characters...
+% Word = calyxes,
+% Score = 7.
+
+% ?- topsolution([f,e,e,l,s,g,o,o,d,m,a,n], Word, Score).
+% Finding word of 12 characters...
+% Finding word of 11 characters...
+% Finding word of 10 characters...
+% Word = fondlesome,
+% Score = 10.
+
+% ?- topsolution([a, c, e, g, i, k, m, a, z], Word, Score).
+% Finding word of 9 characters...
+% Finding word of 8 characters...
+% Finding word of 7 characters...
+% Finding word of 6 characters...
+% Word = agamic,
+% Score = 6.
 
 /*
 |--------------------------------------------------------------------------
@@ -48,32 +77,37 @@ topsolution(List, Word, Score) :-
 | de formule (-b +/- sqrt(b^2 - 4ac)) / 2a
 */
 
-solveQuadratic([A, B, C], [Zero1|Zero2]) :-
-  Discriminant is B**2 - 4 * A * C,
-  Discriminant >= 0,
-  sqrt(Discriminant, Root),
-  Zero1 is (- B + Root) / (2*A),
+solveQuadratic([A, B, C], [Zero1|Zero2]) :-   % Coefficienten en Resultaat
+  Discriminant is B**2 - 4 * A * C,           % De discriminant wordt berekend
+  Discriminant >= 0,                          % Is deze groter dan nul?
+  sqrt(Discriminant, Root),                   
+  Zero1 is (- B + Root) / (2*A),              % Twee mogelijke resultaten worden berekend
   Zero2 is (- B - Root) / (2*A).
 
 /*
 |--------------------------------------------------------------------------
-| Opg 3 - 
+| Opg 3 - Een wiskundige vergelijking die je misschien nog niet kende.
 |--------------------------------------------------------------------------
 | 1/0! + 1/1! + ... + 1/n!
 */
 
-% a) t sumInvFacs/2 
+fac(N, R) :-          % Oefenopdracht, implementatie faculteit berekenen
+  N > 1,
+  N1 is N - 1,
+  fac(N1, R1),
+  R is R1 * N.
+fac(_, 1).
 
-% b) Het resultaat van hierboven is nog niet wat we willen. Toch is de 
-% sommatie al redelijk dicht tot e genaderd. Dit kan je controleren door de 
-% volgende query:
+sumInvFacs(N, R) :-   % Recursief wordt N keer de inverse faculteit berekend
+  N > 0,
+  N1 is N - 1,
+  sumInvFacs(N1, R1),
+  fac(N, Fac),
+  R is 1 / Fac + R1.
+sumInvFacs(_, 1).     % 1/0! is 1/1 is gelijk aan 1
 
-% ?- S is e - 8/3. 
-% S = 0.05161516179237857
-
-% De benadering gaat zelfs zo snel dat een beperkt aantal keer het optellen 
-% van nieuwe sommanten 1 k! geen eﬀect meer heeft. Met andere woorden 
-% Prolog kan geen verschil meer meten tussen
+sumInvFacsLimit(_, _) :-
+  write("Deze opdracht is onduidelijk.").
 
 /*
 |--------------------------------------------------------------------------
@@ -83,20 +117,22 @@ solveQuadratic([A, B, C], [Zero1|Zero2]) :-
 |
 */
 
-% voor n = 30:
-% [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29] 
-% [2,3,5,7,9,11,13,15,17,19,21,23,25,27,29] 
-% [2,3,5,7,11,13,17,19,23,25,29] 
-% [2,3,5,7,11,13,17,19,23,29]
-
-% Create array of N integers and start filter
 primes(N) :-
-  print(N).
+  findall(Num, between(2, N, Num), List),     % Generate list of consecutive numbers
+  eratosthenesFilter(List, N, Result),        % Filter list to reveal all primes
+  write("Primes: "), 
+  print(Result).
 
-% Filter multiples of H from T if H^2 < N
-eratosthenesFilter([H|T], N) :-
-  H**2 < N,
-  filterMultiples(H, T, N1),
-  eratosthenesFilter(T, )
+eratosthenesFilter([P|T], N, [P|Result]) :-
+  P > 1,                                      % First number must be greater than 1
+  P**2 < N,                                   % Square of prime smaller than N
+  filterMultiples(P, T, Filtered),            % Filter list for particular prime P
+  eratosthenesFilter(Filtered, N, Result).    % Perform recursively for all P's
+eratosthenesFilter([], _, []).
 
-filterMultiples(H, T, N1) :-
+filterMultiples(_, [], []).                   % Base case
+filterMultiples(P, [H|T], [H|Filtered]) :-    % Keep the first element in the result
+  H mod P =\= 0,                              % If the first element is not divisible by the prime P
+  filterMultiples(P, T, Filtered).            % Filter rest of the list
+filterMultiples(P, [_|T], Filtered) :-        % Else if element is divisible, it is not prime
+  filterMultiples(P, T, Filtered).            % So it gets discarded and the recursion continues
