@@ -10,11 +10,10 @@
 |
 | De output zou er als volgt uit moeten zien: 
 |
-| ?- answer(stefan).
+| ?- answer(stefan). 
 | The favourite pancake topping of the TA of this student is stroop met suiker.
 | true.
 */
-  
 has_ta(alice, mary). 
 has_ta(bob, mary). 
 has_ta(cecilia, paul).
