@@ -65,26 +65,23 @@ random_code(R) :-
 |-------------------------------------------------------------------------------
 */
 
-remove_first(_, [], []).
-remove_first(Element, [Element|Tail], Tail).
-remove_first(Element, [Head|Tail], [Head|Result]) :-
-  remove_first(Element, Tail, Result).
+% De rule colorCombo zorgt dat de verschillende variabelen verschillend zijn.
 
-% De totale hoeveelheid mogelijke codes zou moeten zijn: 6 * 5 * 4 * 3 = 360.
+colorCombo([W, X, Y, Z]) :-
+  color(W),
+  color(X),
+  color(Y),
+  color(Z),
+  \+ W = X, \+ W = Y, \+ W = Z,
+  \+ Y = X, \+ Y = Z,
+  \+ Z = X.
+
+% De totale hoeveelheid mogelijkheden zou moeten zijn: 6 * 5 * 4 * 3 = 360.
+
 all_codes(R) :-
-  colors(Colors),
-  all_codes(Colors, Colors, R).
-
-all_codes([], _, []).
-all_codes([H|T], Colors, [Combos|R]) :-
-  remove_first(H, Colors, Rest),
-  findall(P, permutation(Rest, P), Combos), !,
-  all_codes(T, Colors, R).
-
-% all_codes([H|T], Colors, [Combos|R]) :-
-%   remove_first(H, Colors, Rest),
-%   findall(P, permutation(Rest, P), Combos),
-%   all_codes(T, Colors, R).
+  findall([C1, C2, C3, C4], colorCombo([C1, C2, C3, C4]), R),
+  length(R, Length),
+  write("Amount of possible combinations: "), write(Length).
 
 
 /*
@@ -122,7 +119,7 @@ evaluate_trial([_|T], O, [_|T1], [wrong|Eval]) :-
 
 %
 update(Code, PrePossibilities, Attempt, PostPossibilities) :-
-print(lol).
+  write()
 
 trials() :-
 print(lol).
