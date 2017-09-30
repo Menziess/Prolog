@@ -36,7 +36,16 @@
 |-------------------------------------------------------------------------------
 */
 
-colors([rood, oranje, geel, blauw, groen, bruin]).
+% Alle kleuren.
+
+color(rood).
+color(oranje).
+color(geel).
+color(blauw).
+color(groen).
+color(bruin).
+colors(X) :-
+  findall(Y, color(Y), X).
 
 % Een code bestaat uit een combinatie van 4 verschillende getallen van 0 tot en
 % met 5. De zes verschillende getallen in een lijst worden geschuffled, daarna
@@ -56,16 +65,26 @@ random_code(R) :-
 |-------------------------------------------------------------------------------
 */
 
+remove_first(_, [], []).
+remove_first(Element, [Element|Tail], Tail).
+remove_first(Element, [Head|Tail], [Head|Result]) :-
+  remove_first(Element, Tail, Result).
+
 % De totale hoeveelheid mogelijke codes zou moeten zijn: 6 * 5 * 4 * 3 = 360.
 all_codes(R) :-
   colors(Colors),
-  all_codes(Colors, R).
+  all_codes(Colors, Colors, R).
 
-all_codes([]) :-
+all_codes([], _, []).
+all_codes([H|T], Colors, [Combos|R]) :-
+  remove_first(H, Colors, Rest),
+  findall(P, permutation(Rest, P), Combos), !,
+  all_codes(T, Colors, R).
 
-
-
-
+% all_codes([H|T], Colors, [Combos|R]) :-
+%   remove_first(H, Colors, Rest),
+%   findall(P, permutation(Rest, P), Combos),
+%   all_codes(T, Colors, R).
 
 
 /*
