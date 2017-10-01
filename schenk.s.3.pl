@@ -81,7 +81,7 @@ colorCombo([W, X, Y, Z]) :-
 all_codes(R) :-
   findall([C1, C2, C3, C4], colorCombo([C1, C2, C3, C4]), R),
   length(R, Length),
-  write("Amount of possible combinations: "), write(Length).
+  write("Amount of possible combinations: "), write(Length), nl, nl.
 
 
 /*
@@ -102,12 +102,10 @@ evaluate_trial(Code, Attempt, Eval) :-
 evaluate_trial([], _, [], []).
 evaluate_trial([H|T], O, [H|T1], [x|Eval]) :-
   evaluate_trial( T,  O, T1, Eval).
-
 evaluate_trial([_|T], O, [H|T1], [o|Eval]) :-
   member(H, O),
   evaluate_trial( T,  O, T1, Eval), !.
-
-evaluate_trial([_|T], O, [_|T1], [wrong|Eval]) :-
+evaluate_trial([_|T], O, [_|T1], [' '|Eval]) :-
   evaluate_trial( T,  O, T1, Eval), !.
 
 
@@ -117,9 +115,97 @@ evaluate_trial([_|T], O, [_|T1], [wrong|Eval]) :-
 |-------------------------------------------------------------------------------
 */
 
-%
-update(Code, PrePossibilities, Attempt, PostPossibilities) :-
-  write()
+write_list([]).
+write_list([H|T]):-
+  write(H), write(" "),
+  write_list(T).
+
+% Update possibilities door kleuren en correcte posities te filteren.
+
+update(Code, Possibilities, Attempt, Leftovers) :-
+  evaluate_trial(Code, Attempt, Eval),
+  evaluate_attempt(Attempt, Eval, Colors, Positions),
+
+  filterColors(Colors, Possibilities, ColorFiltered),
+  filterPositions(Positions, ColorFiltered, Leftovers),
+
+  length(Leftovers, Length),
+  write(Length),
+  write_list(Attempt),
+  write("\t"),
+  write_list(Eval), nl.
+
+% Creert een lijst met kleuren en posities die correct waren.
+
+evaluate_attempt([], [], [], []).
+evaluate_attempt([A|T], [E|T1], [A|Color], [A|Position]) :-
+  E = x,
+  evaluate_attempt(T, T1, Color, Position).
+evaluate_attempt([A|T], [E|T1], [A|Color], [' '|Position]) :-
+  E = o,
+  evaluate_attempt(T, T1, Color, Position).
+evaluate_attempt([_|T], [_|T1], Color, [' '|Position]) :-
+  evaluate_attempt(T, T1, Color, Position).
+
+% Filtert kleuren weg die niet in de code zitten.
+
+filterColors([], _, _).
+filterColors([H|T], Possibilities, Leftovers) :-
+  filterColors(T, Possibilities, Leftovers),
+  filterColor(H, Possibilities, Leftovers).
+
+filterColor(_, [], []).
+filterColor(Color, [P|Possibilities], [P|Leftovers]) :-
+  member(Color, P), !,
+  filterColor(Color, Possibilities, Leftovers).
+filterColor(Color, [_|Possibilities], Leftovers) :-
+  filterColor(Color, Possibilities, Leftovers).
+
+% Filtert posities weg die niet goed geraden waren.
+
+filterPositions(Positions, Possibilities, Leftovers) :-
+  filterPosition(Positions, Possibilities, Leftovers, 0).
+
+filterPosition([], _, _, _).
+filterPosition([H|T], Possibilities, Leftovers, Nth) :-
+  \+ H = ' ',
+  findall(
+    H,
+    (member(L, Possibilities), nth0(Nth, L, Elem), Elem = H),
+    Leftovers
+  ),
+  Nth1 is Nth + 1,
+  filterPosition(T, Leftovers, Leftovers, Nth1).
+filterPosition([_|T], Possibilities, Leftovers, Nth) :-
+  Nth1 is Nth + 1,
+  filterPosition(T, Possibilities, Leftovers, Nth1).
+
+
+/*
+|-------------------------------------------------------------------------------
+| Opg 5 - Implementeer een Prolog-predicaat trials.
+|-------------------------------------------------------------------------------
+*/
+
+% Genereert een code en berekent alle possibilities, vervolgens begint de eerste
+% trial met alle possibilities.
 
 trials() :-
-print(lol).
+  random_code(Code),
+  all_codes(Possibilities),
+  write("--------------------------------------"),  nl,
+  write("Geheime code = "), write_list(Code),       nl,
+  write("--------------------------------------"),  nl,
+  nl,
+  trial(Code, Possibilities, 1).
+
+% Met een loop worden de updates aangeroepen.
+
+trial(Code, [Possibility|Possibilities], N) :-
+  N =< 30,
+  N1 is N + 1,
+  write("Poging "), write(N), write(" = "),
+  update(Code, Possibilities, Possibility, Leftover), !,
+  trial(Code, Leftover, N1).
+
+
