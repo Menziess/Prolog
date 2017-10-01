@@ -133,30 +133,27 @@ listEquals([H1|T1], [H2|T2]) :-
 
 update(Code, Possibilities, Attempt, Leftovers) :-
   evaluate_trial(Code, Attempt, Eval),
-  evaluate_attempt(Attempt, Eval, Colors, Positions),
+  evaluate_attempt(Attempt, Eval, Colors, Correct, Incorrect),
 
-  filterColors(Colors, Possibilities, ColorFiltered),
-  findall(X, filterPositions(Positions, ColorFiltered, Leftovers), Leftovers),
-
-  write("leftover"), write(Leftovers),
-  length(Leftovers, Length2),
-  write(" length: "), write(Length2), nl,
+  filterColors(Colors, Possibilities, Leftovers1),
+  findall(X, filterCorrect(Correct, Leftovers1, [X]), Leftovers2),
+  findall(Y, filterIncorrect(Incorrect, Leftovers2, [Y]), Leftovers),
 
   write_list(Attempt),
   write("\t"),
-  write_list(Eval), nl, nl.
+  write_list(Eval), nl.
 
 % Creert lijsten met kleuren en posities die correct waren.
 
-evaluate_attempt([], [], [], []).
-evaluate_attempt([A|T], [E|T1], [A|Color], [A|Position]) :-
+evaluate_attempt([], [], [], [], []).
+evaluate_attempt([A|T], [E|T1], [A|Color], [A|Correct], [' '|Incorrect]) :-
   E = x,
-  evaluate_attempt(T, T1, Color, Position).
-evaluate_attempt([A|T], [E|T1], [A|Color], [_|Position]) :-
+  evaluate_attempt(T, T1, Color, Correct, Incorrect).
+evaluate_attempt([A|T], [E|T1], [A|Color], [_|Correct], [A|Incorrect]) :-
   E = o,
-  evaluate_attempt(T, T1, Color, Position).
-evaluate_attempt([_|T], [_|T1], Color, [_|Position]) :-
-  evaluate_attempt(T, T1, Color, Position).
+  evaluate_attempt(T, T1, Color, Correct, Incorrect).
+evaluate_attempt([_|T], [_|T1], Color, [_|Correct], [A|Incorrect]) :-
+  evaluate_attempt(T, T1, Color, Correct, Incorrect).
 
 % Filtert kleuren weg die niet in de code zitten.
 
@@ -172,14 +169,23 @@ filterColor(Color, [P|Possibilities], [P|Leftovers]) :-
 filterColor(Color, [_|Possibilities], Leftovers) :-
   filterColor(Color, Possibilities, Leftovers).
 
+% Behoudt de mogelijkheden met posities die goed geraden zijn.
+
+filterCorrect(_, [], []).
+filterCorrect(Correct, [Possibility|Rest], [Possibility|Leftovers]) :-
+  listEquals(Correct, Possibility),
+  filterCorrect(Correct, Rest, Leftovers).
+filterCorrect(Correct, [Possibility|Rest], Leftovers) :-
+  filterCorrect(Correct, Rest, Leftovers).
+
 % Filtert posities weg die niet goed geraden zijn.
 
-filterPositions(_, [], []).
-filterPositions(Positions, [Possibility|Rest], [Possibility|Leftovers]) :-
-  listEquals(Positions, Possibility),
-  filterPositions(Positions, Rest, Leftovers).
-filterPositions(Positions, [Possibility|Rest], Leftovers) :-
-  filterPositions(Positions, Rest, Leftovers).
+filterIncorrect(_, [], []).
+filterIncorrect(Correct, [Possibility|Rest], [Possibility|Leftovers]) :-
+  \+ listEquals(Correct, Possibility),
+  filterIncorrect(Correct, Rest, Leftovers).
+filterIncorrect(Correct, [Possibility|Rest], Leftovers) :-
+  filterIncorrect(Correct, Rest, Leftovers).
 
 
 /*
@@ -203,7 +209,7 @@ trials() :-
 % Met een loop worden de updates aangeroepen.
 
 trial(Code, [Possibility|Possibilities], N) :-
-  N =< 6,
+  N =< 10,
   N1 is N + 1,
   write("Poging "), write(N), write(" = "),
   update(Code, Possibilities, Possibility, Leftover), !,
