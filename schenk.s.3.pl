@@ -127,6 +127,7 @@ update(Code, Possibilities, Attempt, Leftovers) :-
   evaluate_attempt(Attempt, Eval, Colors, Positions),
 
   filterColors(Colors, Possibilities, ColorFiltered),
+
   filterPositions(Positions, ColorFiltered, Leftovers),
 
   length(Leftovers, Length),
@@ -141,10 +142,10 @@ evaluate_attempt([], [], [], []).
 evaluate_attempt([A|T], [E|T1], [A|Color], [A|Position]) :-
   E = x,
   evaluate_attempt(T, T1, Color, Position).
-evaluate_attempt([A|T], [E|T1], [A|Color], [' '|Position]) :-
+evaluate_attempt([A|T], [E|T1], [A|Color], [_|Position]) :-
   E = o,
   evaluate_attempt(T, T1, Color, Position).
-evaluate_attempt([_|T], [_|T1], Color, [' '|Position]) :-
+evaluate_attempt([_|T], [_|T1], Color, [_|Position]) :-
   evaluate_attempt(T, T1, Color, Position).
 
 % Filtert kleuren weg die niet in de code zitten.
@@ -161,24 +162,17 @@ filterColor(Color, [P|Possibilities], [P|Leftovers]) :-
 filterColor(Color, [_|Possibilities], Leftovers) :-
   filterColor(Color, Possibilities, Leftovers).
 
-% Filtert posities weg die niet goed geraden waren.
+% Filtert posities weg die niet goed geraden zijn.
 
-filterPositions(Positions, Possibilities, Leftovers) :-
-  filterPosition(Positions, Possibilities, Leftovers, 0).
+filterPositions(_, [], []).
+filterPositions(Position, [Possibility|Rest], [Possibility|Leftovers]) :-
+  filterPositions(Position, Rest, Leftovers),
+  filterPosition(Position, Possibility).
 
-filterPosition([], _, _, _).
-filterPosition([H|T], Possibilities, Leftovers, Nth) :-
-  \+ H = ' ',
-  findall(
-    H,
-    (member(L, Possibilities), nth0(Nth, L, Elem), Elem = H),
-    Leftovers
-  ),
-  Nth1 is Nth + 1,
-  filterPosition(T, Leftovers, Leftovers, Nth1).
-filterPosition([_|T], Possibilities, Leftovers, Nth) :-
-  Nth1 is Nth + 1,
-  filterPosition(T, Possibilities, Leftovers, Nth1).
+filterPosition([], []).
+filterPosition([P1|Position], [P2|Possibility]) :-
+  P1 = P2,
+  filterPosition(Position, Possibility).
 
 
 /*
@@ -206,6 +200,7 @@ trial(Code, [Possibility|Possibilities], N) :-
   N1 is N + 1,
   write("Poging "), write(N), write(" = "),
   update(Code, Possibilities, Possibility, Leftover), !,
+  write(Leftover),
   trial(Code, Leftover, N1).
 
 
