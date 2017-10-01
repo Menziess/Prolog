@@ -115,10 +115,19 @@ evaluate_trial([_|T], O, [_|T1], [' '|Eval]) :-
 |-------------------------------------------------------------------------------
 */
 
+% Print lijst op nette manier uit.
+
 write_list([]).
 write_list([H|T]):-
   write(H), write(" "),
   write_list(T).
+
+% Kijkt of twee lijsten gelijk gemaakt kunnen worden.
+
+listEquals([], []).
+listEquals([H1|T1], [H2|T2]) :-
+  H1 = H2,
+  listEquals(T1, T2).
 
 % Update possibilities door kleuren en correcte posities te filteren.
 
@@ -127,16 +136,17 @@ update(Code, Possibilities, Attempt, Leftovers) :-
   evaluate_attempt(Attempt, Eval, Colors, Positions),
 
   filterColors(Colors, Possibilities, ColorFiltered),
+  findall(X, filterPositions(Positions, ColorFiltered, Leftovers), Leftovers),
 
-  filterPositions(Positions, ColorFiltered, Leftovers),
+  write("leftover"), write(Leftovers),
+  length(Leftovers, Length2),
+  write(" length: "), write(Length2), nl,
 
-  length(Leftovers, Length),
-  write(Length),
   write_list(Attempt),
   write("\t"),
-  write_list(Eval), nl.
+  write_list(Eval), nl, nl.
 
-% Creert een lijst met kleuren en posities die correct waren.
+% Creert lijsten met kleuren en posities die correct waren.
 
 evaluate_attempt([], [], [], []).
 evaluate_attempt([A|T], [E|T1], [A|Color], [A|Position]) :-
@@ -165,14 +175,11 @@ filterColor(Color, [_|Possibilities], Leftovers) :-
 % Filtert posities weg die niet goed geraden zijn.
 
 filterPositions(_, [], []).
-filterPositions(Position, [Possibility|Rest], [Possibility|Leftovers]) :-
-  filterPositions(Position, Rest, Leftovers),
-  filterPosition(Position, Possibility).
-
-filterPosition([], []).
-filterPosition([P1|Position], [P2|Possibility]) :-
-  P1 = P2,
-  filterPosition(Position, Possibility).
+filterPositions(Positions, [Possibility|Rest], [Possibility|Leftovers]) :-
+  listEquals(Positions, Possibility),
+  filterPositions(Positions, Rest, Leftovers).
+filterPositions(Positions, [Possibility|Rest], Leftovers) :-
+  filterPositions(Positions, Rest, Leftovers).
 
 
 /*
@@ -196,11 +203,10 @@ trials() :-
 % Met een loop worden de updates aangeroepen.
 
 trial(Code, [Possibility|Possibilities], N) :-
-  N =< 30,
+  N =< 6,
   N1 is N + 1,
   write("Poging "), write(N), write(" = "),
   update(Code, Possibilities, Possibility, Leftover), !,
-  write(Leftover),
   trial(Code, Leftover, N1).
 
 
