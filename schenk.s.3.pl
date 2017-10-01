@@ -90,14 +90,13 @@ all_codes(R) :-
 |-------------------------------------------------------------------------------
 */
 
-% De originele code wordt meegegeven om te kunnen checken of de head van de
-% poging zich bevind in de code in het predikaat evaluate_trial/4.
+% De originele code wordt twee keer meegegeven aan evaluate_trial/4.
 
 evaluate_trial(Code, Attempt, Eval) :-
   evaluate_trial(Code, Code, Attempt, Eval).
 
 % Als de kleur goed is wordt er een 'x' in de Evaluation gezet, als de kleur
-% zich in de code bevind wordt er een 'o' in gezet, en anders een 'wrong'.
+% zich in de code bevind wordt er een 'o' in gezet, en anders een ' '.
 
 evaluate_trial([], _, [], []).
 evaluate_trial([H|T], O, [H|T1], [x|Eval]) :-
@@ -143,7 +142,8 @@ update(Code, Possibilities, Attempt, Leftovers) :-
   write("\t"),
   write_list(Eval), nl.
 
-% Creert lijsten met kleuren en posities die correct waren.
+% Creert lijsten met kleuren en posities die correct of incorrect waren om
+% de Possibilities te kunnen filteren.
 
 evaluate_attempt([], [], [], [], []).
 evaluate_attempt([A|T], [E|T1], [A|Color], [A|Correct], [' '|Incorrect]) :-
@@ -152,7 +152,7 @@ evaluate_attempt([A|T], [E|T1], [A|Color], [A|Correct], [' '|Incorrect]) :-
 evaluate_attempt([A|T], [E|T1], [A|Color], [_|Correct], [A|Incorrect]) :-
   E = o,
   evaluate_attempt(T, T1, Color, Correct, Incorrect).
-evaluate_attempt([_|T], [_|T1], Color, [_|Correct], [A|Incorrect]) :-
+evaluate_attempt([A|T], [_|T1], Color, [_|Correct], [A|Incorrect]) :-
   evaluate_attempt(T, T1, Color, Correct, Incorrect).
 
 % Filtert kleuren weg die niet in de code zitten.
@@ -175,17 +175,18 @@ filterCorrect(_, [], []).
 filterCorrect(Correct, [Possibility|Rest], [Possibility|Leftovers]) :-
   listEquals(Correct, Possibility),
   filterCorrect(Correct, Rest, Leftovers).
-filterCorrect(Correct, [Possibility|Rest], Leftovers) :-
+filterCorrect(Correct, [_|Rest], Leftovers) :-
   filterCorrect(Correct, Rest, Leftovers).
 
-% Filtert posities weg die niet goed geraden zijn.
+% Filtert posities weg die niet goed geraden zijn. (Hier werkt iets nog niet
+% correct)
 
 filterIncorrect(_, [], []).
-filterIncorrect(Correct, [Possibility|Rest], [Possibility|Leftovers]) :-
-  \+ listEquals(Correct, Possibility),
-  filterIncorrect(Correct, Rest, Leftovers).
-filterIncorrect(Correct, [Possibility|Rest], Leftovers) :-
-  filterIncorrect(Correct, Rest, Leftovers).
+filterIncorrect(Incorrect, [Possibility|Rest], [Possibility|Leftovers]) :-
+  \+ listEquals(Incorrect, Possibility),
+  filterIncorrect(Incorrect, Rest, Leftovers).
+filterIncorrect(Incorrect, [_|Rest], Leftovers) :-
+  filterIncorrect(Incorrect, Rest, Leftovers).
 
 
 /*
