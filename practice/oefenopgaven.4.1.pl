@@ -45,9 +45,9 @@ init_counter() :-
   retractall(counter(_)),
   assert(counter(0)).
 
-step_counter(New) :-
+step_counter :-
   counter(Previous),
-  retractall(counter(Previous)),
+  retractall(counter(_)),
   New is Previous + 1,
   assert(counter(New)).
 
@@ -61,8 +61,8 @@ experiment(Name, List, Count) :-
   get_counter(Count).
 
 % c.
-random_list()
-
+random_list(Length, Max, List) :-
+  randset(Length, Max, List).
 
 /**
  * Import algorithms.

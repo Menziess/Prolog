@@ -1,8 +1,8 @@
 
 check(_, A, B) :-
+    step_counter(),
     Goal =.. [<, A, B],
-    call(Goal),
-    step_counter(_).
+    call(Goal).
 
 % Vergelijk A en B op grond de relatie Rel.
 
