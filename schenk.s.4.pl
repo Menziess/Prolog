@@ -37,22 +37,35 @@ beginToestand(State) :-
 | Opg 2
 |-------------------------------------------------------------------------------
 */
+
+% Alle indices beginnen met 0.
+
+% Haalt kolom N op.
 kolom(0, [H|State], H).
 kolom(N, [_|State], List) :-
   NN is N - 1,
   kolom(NN, State, List).
 
+% Haalt kolommen met indices [Start, End] op.
+kolomrange(Start, End, _, []) :-
+  Start > End.
+kolomrange(Start, End, State, [Col|Columns]) :-
+  Next is Start + 1,
+  kolom(Start, State, Col),
+  kolomrange(Next, End, State, Columns).
+
+% Haalt rij N op.
 rij(N, State, Row) :-
   findall(Elem, (member(Col, State), nth0(N, Col, Elem)), Row).
 
-kwadrant(N, State, Quadrant) :-
-  Y is N // 3,
-  X is N mod 3,
+% Haalt kwadrant op.
+kwadrant(N, State, Columns) :-
+  Y is N // 3 * 3,
+  X is N mod 3 * 3,
+  XX is X + 2,
+  findall(Col, kolomrange(X, XX, State, Col), Columns).
 
 
-test(R) :-
-  beginToestand(State),
-  rij(N, State, R).
 
 /*
 |-------------------------------------------------------------------------------
