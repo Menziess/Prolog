@@ -11,29 +11,16 @@
 % Haalt het nth element op
 nth(0, [H|_], H) :-
   !.
-nth(N, [H|T], E) :-
+nth(N, [_|T], E) :-
   NN is N - 1,
   nth(NN, T, E), !.
 
 % Haalt 3 elementen vanaf index N op
 nth3(0, [H1, H2, H3|_], [H1,H2,H3]) :-
   !.
-nth3(N, [H|T], L) :-
+nth3(N, [_|T], L) :-
   NN is N - 1,
   nth3(NN, T, L), !.
-
-% % Creert een lege lijst met '.'
-% emptyList(0, []).
-% emptyList(N, [.|List]) :-
-%   NN is N - 1,
-%   emptyList(NN, List), !.
-
-% % Creert een lege sudoku
-% emptySudoku(0, []).
-% emptySudoku(Size, [Col|State]) :-
-%   emptyList(Size, Col),
-%   NewSize is Size - 1,
-%   emptySudoku(NewSize, State), !.
 
 /*
 |-------------------------------------------------------------------------------
@@ -55,6 +42,19 @@ beginToestand(State) :-
     [., 8, 4, 2, ., ., ., ., 7]
   ].
 
+eindToestand(State) :-
+  State = [
+    [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    [2, 3, 4, 5, 6, 7, 8, 9, 1],
+    [3, 4, 5, 6, 7, 8, 9, 1, 2],
+    [4, 5, 6, 7, 8, 9, 1, 2, 3],
+    [5, 6, 7, 8, 9, 1, 2, 3, 4],
+    [6, 7, 8, 9, 1, 2, 3, 4, 5],
+    [7, 8, 9, 1, 2, 3, 4, 5, 6],
+    [8, 9, 1, 2, 3, 4, 5, 6, 7],
+    [9, 1, 2, 3, 4, 5, 6, 7, 8],
+  ].
+
 /*
 |-------------------------------------------------------------------------------
 | Opg 2
@@ -64,7 +64,7 @@ beginToestand(State) :-
 % Alle indices beginnen met index 0
 
 % Haalt kolom N op.
-kolom(0, [H|State], H).
+kolom(0, [H|_], H).
 kolom(N, [_|State], List) :-
   NN is N - 1,
   kolom(NN, State, List).
@@ -95,8 +95,24 @@ kwadrant(N, State, Subs) :-
 | Opg 3
 |-------------------------------------------------------------------------------
 */
-goal(State) :-
-  write("checkt eindtoestand").
+
+% Bepaalt of alle elementen van een lijst uniek en geen '.' zijn
+unique([]).
+unique([_, []]).
+unique([H|T]) :-
+  \+ member('.', H),
+  \+ member(H,T),
+  unique(T).
+
+% Als alle kolommen en rijen uniek zijn, en geen '.' bevatten, is de sudoku
+% opgelost
+goal(State, Rows) :-
+  findall(Row, rij(N, State, Row), Rows),
+  unique(State).
+
+test() :-
+  eindToestand(State),
+  goal(State).
 
 /*
 |-------------------------------------------------------------------------------
@@ -105,3 +121,23 @@ goal(State) :-
 */
 move(CurrentState, NewState) :-
   write("..").
+
+/*
+|-------------------------------------------------------------------------------
+| Opg 5
+|-------------------------------------------------------------------------------
+*/
+% go()
+% ------------------------
+% | 1 . . | . . 2 | 7 6 . |
+% | 2 . . | . . 1 | . . 8 |
+% | . 3 6 | . . 7 | . . 4 |
+% ------------------------
+% | . . . | . 6 . | 8 7 2 |
+% | 6 . 7 | . 2 9 | . . . |
+% | . . . | . . . | . . . |
+% ------------------------
+% | . 8 . | . 7 . | 3 . . |
+% | . 1 3 | . . . | 5 . . |
+% | . . . | . 1 . | . 9 7 |
+% ------------------------
