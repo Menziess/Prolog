@@ -186,15 +186,21 @@ move(State, NewState) :-
   update(State, 8, 8, NewState).
 
 
-test() :-                   % Het move predikaat krijg ik niet goed aan de praat
+% !!!!!!!!!!!!
+% Het move predikaat kreeg ik niet goed aan de praat, ik denk dat ergens een
+% index niet goed wordt geupdatet waardoor hij in een infinite loop zit.
+% Verder verwacht ik dat de logica zou moeten werken.
+% !!!!!!!!!!!!
+test() :-
   beginToestand(State),
   printState(State),
   move(State, End),
   printState(End).
 
+
 digits([1, 2, 3, 4, 5, 6, 7, 8, 9]).
 
-% Itereert door kolommen om een value 0 te vinden
+% Itereert door kolommen van de state om een value 0 te vinden
 update(_, 0, _, _).
 update(State, C, R, NewState) :-
   kolom(C, State, Col),
@@ -205,7 +211,7 @@ update(State, C, R, NewState) :-
   kolom(C, State, Col),
   updateElement(State, Col, C, R, NewState).
 
-% Voor een kolom met value 0 wordt een digit gevonden die de state valide maakt
+% Voor een kolom met value 0 wordt een digit gevonden die de state valide maakt,% vervolgens wordt de state geupdate en teruggegeven
 updateElement(State, [0|_], C, R, NewState) :-
   digits(Digits),
   kolom(C, State, Col),
@@ -247,9 +253,10 @@ go(Function) :-
   get_time(StartTime),
   depth_first(State, EndState),
   get_time(EndTime),
-  TimePassed is EndTime - StartTime,
+  TotalTime is EndTime - StartTime,
   printState(EndState),
-  write("Brute force depth first kosste me dit "), write(TimePassed),
+  write("Brute force depth first kosste me dit "),
+  write(TotalTime),
   write(" seconden."), nl.
 
 % Depth first search
