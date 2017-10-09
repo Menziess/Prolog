@@ -22,13 +22,22 @@ nth3(N, [_|T], L) :-
   NN is N - 1,
   nth3(NN, T, L), !.
 
+% Transposed matrix
+transpose([[]|_], []).
+transpose(M, [X|T]) :-
+  transpose_row(M, X, M1),
+  transpose(M1, T).
+transpose_row([], [], []).
+transpose_row([[X|Xs]|Ys], [X|R], [Xs|Z]) :-
+  transpose_row(Ys, R, Z).
+
 /*
 |-------------------------------------------------------------------------------
 | Opg 1
 |-------------------------------------------------------------------------------
 */
 
-% Elke list stelt een kolom voor.
+% Begintoestand, elke list stelt een kolom voor
 beginToestand(State) :-
   State = [
     [1, 2, ., ., 6, ., ., ., .],
@@ -42,17 +51,18 @@ beginToestand(State) :-
     [., 8, 4, 2, ., ., ., ., 7]
   ].
 
+% Een juiste eindtoestand (om te testen)
 eindToestand(State) :-
   State = [
-    [1, 2, 3, 4, 5, 6, 7, 8, 9],
-    [2, 3, 4, 5, 6, 7, 8, 9, 1],
-    [3, 4, 5, 6, 7, 8, 9, 1, 2],
-    [4, 5, 6, 7, 8, 9, 1, 2, 3],
-    [5, 6, 7, 8, 9, 1, 2, 3, 4],
-    [6, 7, 8, 9, 1, 2, 3, 4, 5],
-    [7, 8, 9, 1, 2, 3, 4, 5, 6],
-    [8, 9, 1, 2, 3, 4, 5, 6, 7],
-    [9, 1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 9, 8, 4, 3, 2, 7, 6, 5],
+    [2, 7, 4, 6, 5, 1, 9, 3, 8],
+    [5, 3, 6, 9, 8, 7, 1, 2, 4],
+    [3, 4, 9, 1, 6, 5, 8, 7, 2],
+    [6, 5, 7, 8, 2, 9, 4, 1, 3],
+    [8, 2, 1, 7, 4, 3, 6, 5, 9],
+    [9, 8, 2, 5, 7, 6, 3, 4, 1],
+    [7, 1, 3, 2, 9, 4, 5, 8, 6],
+    [4, 6, 5, 3, 1, 8, 2, 9, 7]
   ].
 
 /*
@@ -102,13 +112,22 @@ unique([_, []]).
 unique([H|T]) :-
   \+ member('.', H),
   \+ member(H,T),
-  unique(T).
+  unique(T), !.
 
-% Als alle kolommen en rijen uniek zijn, en geen '.' bevatten, is de sudoku
-% opgelost
-goal(State, Rows) :-
-  findall(Row, rij(N, State, Row), Rows),
-  unique(State).
+% Voert unique check uit op alle sublijsten
+subUnique([]).
+subUnique([H|T]) :-
+  unique(H),
+  subUnique(T).
+
+% Controleert of alle rijen en kolommen uniek zijn, en of alle values in de
+% rijen en kolommen uniek zijn.
+goal(State) :-
+  transpose(State, TransposedState),
+  unique(TransposedState),
+  unique(State),
+  subUnique(TransposedState),
+  subUnique(State), !.
 
 test() :-
   eindToestand(State),
@@ -127,17 +146,41 @@ move(CurrentState, NewState) :-
 | Opg 5
 |-------------------------------------------------------------------------------
 */
-% go()
-% ------------------------
-% | 1 . . | . . 2 | 7 6 . |
-% | 2 . . | . . 1 | . . 8 |
-% | . 3 6 | . . 7 | . . 4 |
-% ------------------------
-% | . . . | . 6 . | 8 7 2 |
-% | 6 . 7 | . 2 9 | . . . |
-% | . . . | . . . | . . . |
-% ------------------------
-% | . 8 . | . 7 . | 3 . . |
-% | . 1 3 | . . . | 5 . . |
-% | . . . | . 1 . | . 9 7 |
-% ------------------------
+
+% Print rij uit met kwadrant size S
+printRow(Row, S) :-
+  length(Row, N),
+  printRow(Row, N, S).
+printRow([], 0, _) :-
+  write('|').
+printRow([H|T], N, S) :-
+  N mod S =:= 0, !,
+  write('| '), write(H), write(' '),
+  NN is N - 1,
+  printRow(T, NN, S).
+printRow([H|T], N, S) :-
+  write(H), write(' '),
+  NN is N - 1,
+  printRow(T, NN, S).
+
+% Print sudoku state
+printState(State) :-
+  length(State, Length),
+  sqrt(Length, QuadrantSize),
+  round(QuadrantSize, Q),
+  printState(Q, State).
+printState(_, []) :-
+  write(-------------------------), nl, nl.
+printState(Q, [H|T]) :-
+  length([H|T], L),
+  L mod Q =:= 0, !,
+  write(-------------------------), nl,
+  printRow(H, Q), nl,
+  printState(Q, T), !.
+printState(Q, [H|T]) :-
+  printRow(H, Q), nl,
+  printState(Q, T).
+
+test5() :-
+  eindToestand(State),
+  printState(State).
