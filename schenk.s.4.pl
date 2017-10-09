@@ -40,15 +40,15 @@ transpose_row([[X|Xs]|Ys], [X|R], [Xs|Z]) :-
 % Begintoestand, elke list stelt een kolom voor
 beginToestand(State) :-
   State = [
-    [1, 2, ., ., 6, ., ., ., .],
-    [., ., 3, ., ., ., 8, 1, .],
-    [., ., 6, ., 7, ., ., 3, .],
-    [., ., ., ., ., ., ., ., .],
-    [., ., ., 6, 2, ., 7, ., 1],
-    [2, 1, 7, ., 9, ., ., ., .],
-    [7, ., ., 8, ., ., 3, 5, .],
-    [6, ., ., 7, ., ., ., ., 9],
-    [., 8, 4, 2, ., ., ., ., 7]
+    [1, 2, 0, 0, 6, 0, 0, 0, 0],
+    [0, 0, 3, 0, 0, 0, 8, 1, 0],
+    [0, 0, 6, 0, 7, 0, 0, 3, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 6, 2, 0, 7, 0, 1],
+    [2, 1, 7, 0, 9, 0, 0, 0, 0],
+    [7, 0, 0, 8, 0, 0, 3, 5, 0],
+    [6, 0, 0, 7, 0, 0, 0, 0, 9],
+    [0, 8, 4, 2, 0, 0, 0, 0, 7]
   ].
 
 % Een juiste eindtoestand (om te testen)
@@ -106,30 +106,63 @@ kwadrant(N, State, Subs) :-
 |-------------------------------------------------------------------------------
 */
 
-% Bepaalt of alle elementen van een lijst uniek en geen '.' zijn
+% Bepaalt of alle elementen van een lijst uniek zijn, behalve de exception
+% elemeenten indien gegeven
 unique([]).
-unique([_, []]).
 unique([H|T]) :-
-  \+ member('.', H),
-  \+ member(H,T),
-  unique(T), !.
+  unique([H|T], null).
+unique([], _).
+unique([Exception|T], Exception) :-
+  unique(T, Exception).
+unique([H|T], Exception) :-
+  \+ member(H, T),
+  unique(T, Exception), !.
+
+% Bepaalt of er geen lege plekken in een lijst zitten
+statenoempty([]).
+statenoempty([H|T]) :-
+  listnoempty(H),
+  statenoempty(T).
+listnoempty([]).
+listnoempty([H|T]) :-
+  \+ 0 = H,
+  listnoempty(T).
 
 % Voert unique check uit op alle sublijsten
 subUnique([]).
-subUnique([H|T]) :-
-  unique(H),
-  subUnique(T).
+subUnique(L) :-
+  subUnique(L, null).
+subUnique([], _).
+subUnique([H|T], E) :-
+  unique(H, E),
+  subUnique(T, E).
 
-% Controleert of alle rijen en kolommen uniek zijn, en of alle values in de
-% rijen en kolommen uniek zijn.
+% Controleert of kwadranten uniek zijn
+quadrantsUnique(-1, _).
+quadrantsUnique(N, State) :-
+  quadrantsUnique(N, State, null).
+quadrantsUnique(-1, _, _).
+quadrantsUnique(N, State, Exception) :-
+  kwadrant(N, State, Subs),
+  flatten(Subs, Quadrant),
+  unique(Quadrant, Exception),
+  NN is N - 1,
+  quadrantsUnique(NN, State, Exception).
+
+% Controleert of alle rijen en kolommen uniek zijn, of alle values in de
+% rijen en kolommen uniek zijn, of de kwadranten uniek zijn en of er geen
+% lege elementen in de sudoku zitten
 goal(State) :-
+  statenoempty(State),
   transpose(State, TransposedState),
+  length(State, NrQuadrants),
+  quadrantsUnique(NrQuadrants, State),
   unique(TransposedState),
   unique(State),
   subUnique(TransposedState),
   subUnique(State), !.
 
-test() :-
+test3() :-
   eindToestand(State),
   goal(State).
 
@@ -138,8 +171,25 @@ test() :-
 | Opg 4
 |-------------------------------------------------------------------------------
 */
-move(CurrentState, NewState) :-
-  write("..").
+
+% Controleert of state in valide staat verkeerd
+valid(State) :-
+  transpose(State, TransposedState),
+  length(State, NrQuadrants),
+  % quadrantsUnique(NrQuadrants, State, 0),
+  % unique(TransposedState),
+  % unique(State),
+  subUnique(TransposedState, 0),
+  subUnique(State, 0), !.
+
+test4() :-
+  beginToestand(State),
+  valid(State).
+
+% move(CurrentState, NewState) :-
+%   write("..").
+
+
 
 /*
 |-------------------------------------------------------------------------------
