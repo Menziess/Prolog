@@ -162,9 +162,6 @@ goal(State) :-
   subUnique(TransposedState),
   subUnique(State), !.
 
-test3() :-
-  eindToestand(State),
-  goal(State).
 
 /*
 |-------------------------------------------------------------------------------
@@ -176,19 +173,62 @@ test3() :-
 valid(State) :-
   transpose(State, TransposedState),
   length(State, NrQuadrants),
-  % quadrantsUnique(NrQuadrants, State, 0),
-  % unique(TransposedState),
-  % unique(State),
+  quadrantsUnique(NrQuadrants, State, 0),
+  unique(TransposedState),
+  unique(State),
   subUnique(TransposedState, 0),
   subUnique(State, 0), !.
 
-test4() :-
+% Als er een kolom bestaat met een leeg vak, wordt geprobeerd om een getal in
+% te voeren die een valid newstate oplevert
+move([], []).
+move(State, NewState) :-
+  update(State, 8, 8, NewState).
+
+
+test() :-                   % Het move predikaat krijg ik niet goed aan de praat
   beginToestand(State),
-  valid(State).
+  printState(State),
+  move(State, End),
+  printState(End).
 
-% move(CurrentState, NewState) :-
-%   write("..").
+digits([1, 2, 3, 4, 5, 6, 7, 8, 9]).
 
+% Itereert door kolommen om een value 0 te vinden
+update(_, 0, _, _).
+update(State, C, R, NewState) :-
+  kolom(C, State, Col),
+  statenoempty(Col),
+  CC is C - 1,
+  update(State, CC, R, NewState).
+update(State, C, R, NewState) :-
+  kolom(C, State, Col),
+  updateElement(State, Col, C, R, NewState).
+
+% Voor een kolom met value 0 wordt een digit gevonden die de state valide maakt
+updateElement(State, [0|_], C, R, NewState) :-
+  digits(Digits),
+  kolom(C, State, Col),
+  nth(R, Col, Elem),
+  member(Elem, Digits),
+  updateState(State, C, R, NewState, Elem),
+  valid(NewState).
+updateElement(State, [_|T], C, R, NewState) :-
+  RR is R - 1,
+  updateElement(State, T, C, RR, NewState).
+
+% Update state naar newstate
+updateState([H|State], 0, R, [New|State], Elem) :-
+  updateIndex(H, R, Elem, New).
+updateState([H|State], C, R, [H|NewState], Elem) :-
+  CC is C - 1,
+  updateState(State, CC, R, NewState, Elem).
+
+% Update element in lijst
+updateIndex([_|Col], 0, Elem, [Elem|Col]) :- !.
+updateIndex([H|Col], I, Elem, [H|NCol]) :-
+  II is I - 1,
+  updateIndex(Col, II, Elem, NCol).
 
 
 /*
@@ -196,6 +236,29 @@ test4() :-
 | Opg 5
 |-------------------------------------------------------------------------------
 */
+
+% Het move predikaat werkt niet, maar ik heb evengoed opg 5 zo goed mogelijk
+% gemaakt
+go(Function) :-
+  Goal =.. [Function, State],
+  call(Goal),
+  printState(State),
+  write("Momentje ..."), nl,
+  get_time(StartTime),
+  depth_first(State, EndState),
+  get_time(EndTime),
+  TimePassed is EndTime - StartTime,
+  printState(EndState),
+  write("Brute force depth first kosste me dit "), write(TimePassed),
+  write(" seconden."), nl.
+
+% Depth first search
+depth_first(EndState, EndState) :-
+  goal(EndState),
+  printState(EndState).
+depth_first(State, EndState) :-
+  move(State, NewState),
+  depth_first(NewState, EndState).
 
 % Print rij uit met kwadrant size S
 printRow(Row, S) :-
@@ -230,7 +293,3 @@ printState(Q, [H|T]) :-
 printState(Q, [H|T]) :-
   printRow(H, Q), nl,
   printState(Q, T).
-
-test5() :-
-  eindToestand(State),
-  printState(State).
