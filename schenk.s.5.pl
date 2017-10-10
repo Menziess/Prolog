@@ -4,59 +4,37 @@
 
 /*
 |-------------------------------------------------------------------------------
-| Opg 1 -
+| Opg 1
 |-------------------------------------------------------------------------------
 */
 
 :- writeln('-------------------------').
-:- writeln('Aanroepen vh spel = ?-go.').
+:- writeln('Type "go." to start').
 :- writeln('-------------------------').
 
-% ------------ Opg. 1-----------------------------------
+draw() :-
+	draw(5).
+draw(N) :-
+	random_code(N, RandomCode),
+	replace_leading_zero(RandomCode, Code),
+	assert(code(Code)).
 
-random_code(Code):-
-    colors(AllColors),
-    draw(4, Code, AllColors, _), !.
+random_code(0, []).
+random_code(N, [Random|Code]) :-
+	NN is N - 1,
+	random_between(0, 9, Random),
+	random_code(NN, Code), !.
 
-% Neem 4 random members van de lijst van alle kleuren:
+replace_leading_zero([H|T], [NonZero|T]) :-
+	H = 0,
+	random_between(1, 9, NonZero).
+replace_leading_zero(Code, Code).
 
-colors([blauw, bruin, geel, groen, oranje, rood]).
-
-% Hulp-predicaten uit de opgaven van dinsdag 19/9
-% -----------------------------------------------
-
-
-nth_select(1, H, [H|T], T):-!.
-nth_select(N, Element, [H|T], [H|TRest]):-
-    integer(N), N > 0,
-    NewN is N-1,
-    nth_select(NewN, Element, T, TRest).
-
-% Selecteert het N-de element Element uit de lijst als gegeven in het
-% derde argument. In het vierde argument wordt een lijst van de overige
-% elementen gegeven (analoog aan de built-in select/3).
-
-
-
-drawMember(Element, List, Rest):-
-    length(List, Length),
-    random(Random),
-    RandomNumber is ceiling(Random*Length),
-    nth_select(RandomNumber, Element, List, Rest).
-
-% Selecteer een willekeurig element Element uit Lijst List en
-% administreer de rest Rest in 3e arg.
-
-draw(0, [], List, List).
-draw(N, [Head|Tail], List, Rest):-
-    NewN is N-1,
-    drawMember(Head, List, Rest1),
-    draw(NewN, Tail, Rest1, Rest).
-
-% Analoog, maar dan een willekeurige trekking van N (1st arg.)
-% elementen.
-
-% -----------Opg. 2-----------------------------------------
+/*
+|-------------------------------------------------------------------------------
+| Opg 2
+|-------------------------------------------------------------------------------
+*/
 
 all_codes(Poss):- findall(Guess, guess(Guess), Poss).
 
@@ -77,7 +55,11 @@ subList(N, [Head|Tail], List):-
 % (-SubList) van +Number elementen uit een gegeven +List.
 
 
-% ----------Opg. 3----------------------------------------------
+/*
+|-------------------------------------------------------------------------------
+| Opg 3
+|-------------------------------------------------------------------------------
+*/
 
 
 
@@ -134,7 +116,11 @@ to_list(N, X, [X|T]):-
 
 
 
-% ---------------Opg. 4-----------------------------------------
+/*
+|-------------------------------------------------------------------------------
+| Opg 4
+|-------------------------------------------------------------------------------
+*/
 
 % update/4
 %
@@ -173,7 +159,11 @@ update(Code, [_|T], Trial, L):-
 % H de te raden code zou zijn.
 %
 
-%------------Opg. 5----------------------------------------------
+/*
+|-------------------------------------------------------------------------------
+| Opg 5
+|-------------------------------------------------------------------------------
+*/
 
 
 % trials/3: Output van pogingen met scores:
@@ -236,7 +226,7 @@ write_code(Code):-
 
 % go/0: voor een simpele aanroep van het spel.
 
-go:-
+go :-
 	random_code(Code),
 	write_code(Code),
 	all_codes(Poss),
