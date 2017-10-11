@@ -3,6 +3,15 @@
 % Stefan Schenk, 11881798, stefan_schenk@hotmail.com
 
 /*
+|	Helper
+*/
+remove_all(_, [], []).
+remove_all(Element, [Element|Tail], Result) :-
+  remove_all(Element, Tail, Result).
+remove_all(Element, [Head|Tail], [Head|Result]) :-
+  remove_all(Element, Tail, Result).
+
+/*
 |-------------------------------------------------------------------------------
 | Opg 1
 |-------------------------------------------------------------------------------
@@ -37,10 +46,10 @@ string_chars(Atom, List) :-
 
 % Calculate x-score.
 scorex(N, X) :-
-	code(O),
-	string_chars(O, OO),
+	code(Code),
+	string_chars(Code, ListCode),
 	string_chars(N, NN),
-	scorex(NN, OO, X).
+	scorex(NN, ListCode, X).
 scorex([], [], 0).
 scorex([H|T1], [H|T2], X) :-
 	scorex(T1, T2, XX), !,
@@ -48,29 +57,22 @@ scorex([H|T1], [H|T2], X) :-
 scorex([_|T1], [_|T2], X):-
 	scorex(T1, T2, X).
 
-
-% evaluate_trial_x registreert het aantal (3de arg.) goed geplaatste
-% kleuren. Het eerste argument is de poging, en het tweede argument de
-% te raden code.
-
-evaluate_trial_xo([], _, 0).
-evaluate_trial_xo([H|T], L, N):-
-	member(H, L),!,
-	evaluate_trial_xo(T, L, NN),
-	N is NN+1.
-evaluate_trial_xo([_|T], L, N):-
-	evaluate_trial_xo(T, L, N).
-
-% evaluate_trial_xo registreert het aantal (3de arg.) goede kleuren (x en
-% o). Wederom is het eerste argument de te evalueren poging en de tweede
-% de te raden code.
-
-evaluate_trial_o(Code, Trial, N):-
-	evaluate_trial_xo(Code, Trial, N2),
-	evaluate_trial_x(Code, Trial, N1),
-	N is N2 - N1.
-
-
+% Calculate o-score.
+scoreo(N, O) :-
+	code(Code),
+	string_chars(Code, ListCode),
+	string_chars(N, NN),
+	scoreo(NN, ListCode, OO),
+	scorex(NN, ListCode, X),
+	O is OO - X.
+scoreo([], _, 0).
+scoreo([H|T1], T2, O) :-
+	member(H, T2),
+	remove_all(H, T2, T2N), !,
+	scoreo(T1, T2N, OO),
+	O is OO + 1.
+scoreo([_|T1], T2, O) :-
+	scoreo(T1, T2, O).
 
 /*
 |-------------------------------------------------------------------------------
