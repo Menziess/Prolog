@@ -12,23 +12,18 @@
 :- writeln('Type "go." to start').
 :- writeln('-------------------------').
 
+% Asserts a code where the first digit is nonzero.
 draw() :-
-	draw(5).
-draw(N) :-
-	random_code(N, RandomCode),
-	replace_leading_zero(RandomCode, Code),
-	assert(code(Code)).
+	random_between(10000, 99999, Code),
+	retractall(code(_)),
+	assert(code(Code)),
+	write_code(Code).
 
-random_code(0, []).
-random_code(N, [Random|Code]) :-
-	NN is N - 1,
-	random_between(0, 9, Random),
-	random_code(NN, Code), !.
-
-replace_leading_zero([H|T], [NonZero|T]) :-
-	H = 0,
-	random_between(1, 9, NonZero).
-replace_leading_zero(Code, Code).
+% Writes the code in a stylish fashion.
+write_code(Code) :-
+	write("********************"), nl,
+	write("De code: "), write(Code), nl,
+	write("********************"), nl.
 
 /*
 |-------------------------------------------------------------------------------
@@ -36,39 +31,23 @@ replace_leading_zero(Code, Code).
 |-------------------------------------------------------------------------------
 */
 
-all_codes(Poss):- findall(Guess, guess(Guess), Poss).
+% Convert code to list.
+string_chars(Atom, List) :-
+	atom_chars(Atom, List).
 
-guess(Code):-
-    colors(AllColors),
-    subList(4, Code, AllColors).
+% Calculate x-score.
+scorex(N, X) :-
+	code(O),
+	string_chars(O, OO),
+	string_chars(N, NN),
+	scorex(NN, OO, X).
+scorex([], [], 0).
+scorex([H|T1], [H|T2], X) :-
+	scorex(T1, T2, XX), !,
+	X is XX + 1.
+scorex([_|T1], [_|T2], X):-
+	scorex(T1, T2, X).
 
-% guess/1: Neem een lijst van 4 elementen uit de lijst van alle kleuren.
-
-
-subList(0, [], _).
-subList(N, [Head|Tail], List):-
-    NN is N-1,
-    select(Head, List, Rest),
-    subList(NN, Tail, Rest).
-
-% subList/3: subList(+Number, -SubList, +List). Haal een deellijst
-% (-SubList) van +Number elementen uit een gegeven +List.
-
-
-/*
-|-------------------------------------------------------------------------------
-| Opg 3
-|-------------------------------------------------------------------------------
-*/
-
-
-
-evaluate_trial_x([], [], 0).
-evaluate_trial_x([H|T1], [H|T2], N):- !,
-	evaluate_trial_x(T1, T2, NN),
-	N is NN + 1.
-evaluate_trial_x([_|T1], [_|T2], N):-
-	evaluate_trial_x(T1, T2, N).
 
 % evaluate_trial_x registreert het aantal (3de arg.) goed geplaatste
 % kleuren. Het eerste argument is de poging, en het tweede argument de
@@ -90,6 +69,36 @@ evaluate_trial_o(Code, Trial, N):-
 	evaluate_trial_xo(Code, Trial, N2),
 	evaluate_trial_x(Code, Trial, N1),
 	N is N2 - N1.
+
+
+
+/*
+|-------------------------------------------------------------------------------
+| Opg 3
+|-------------------------------------------------------------------------------
+*/
+
+% Print alle mogelijke combinaties.
+all_codes(Poss) :-
+	findall(Guess, guess(Guess), Poss).
+
+guess(Code) :-
+    subList(5, Code, ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']).
+
+% guess/1: Neem een lijst van 4 elementen uit de lijst van alle kleuren.
+
+
+subList(0, [], _).
+subList(N, [Head|Tail], List):-
+    NN is N - 1,
+    select(Head, List, Rest),
+    subList(NN, Tail, Rest).
+
+% subList/3: subList(+Number, -SubList, +List). Haal een deellijst
+% (-SubList) van +Number elementen uit een gegeven +List.
+
+
+
 
 % evaluate_trial_o registreert het aantal goede kleuren die niet goed
 % geplaatst zijn. Dit is eenvoudig te definieren als het verschil tussen
@@ -142,23 +151,6 @@ update(Code, [_|T], Trial, L):-
 	update(Code, T, Trial, L).
 
 
-
-% update/4 bepaalt de nieuwe overgebleven lijst van mogelijkheden op
-% grond van het resultaat van de laatste poging.
-%
-% Basis ([]): als er geen mogelijkheden meer over zijn dan verandert
-% geen enkele poging daar iets aan. Dit zal zich niet voordoen, maar we
-% hebben hem hier wel nodig als basis van de recursie (het rekenwerk).
-%
-% Recursie 1 ([H|T], H moet bewaard blijven): H is een mogelijkheid die
-% overblijft als Trial dezelfde evaluatie zou krijgen als H de te raden
-% code zou zijn.
-%
-% Recursie 2 ([_|T], de eerste in de lijst moet verwijderd worden): De
-% eerste mogelijkheid valt af als Trial een andere evaluatie krijgt als
-% H de te raden code zou zijn.
-%
-
 /*
 |-------------------------------------------------------------------------------
 | Opg 5
@@ -175,7 +167,6 @@ update(Code, [_|T], Trial, L):-
 %
 % trials/3 roept uiteindelijk write_colors/3 aan om de lijst van poging
 % netjes uit te schrijven.
-
 trials(Code, [Code|_], [CodeWithScore]):-!,
 	evaluate_trial(Code, Code, Score),
 	append(Code, Score, CodeWithScore),
@@ -183,7 +174,6 @@ trials(Code, [Code|_], [CodeWithScore]):-!,
 
 % Dit is de basis. Als de poging (head van de lijst van overgebleven
 % mogelijkheden) gelijk is aan de te raden code dan zijn we klaar.
-
 trials(Code, [Trial|T], [TrialWithScore|TT]):-
 	evaluate_trial(Code, Trial, Score),
 	append(Trial, Score, TrialWithScore),
@@ -191,41 +181,8 @@ trials(Code, [Trial|T], [TrialWithScore|TT]):-
 	update(Code, [Trial|T], Trial, NewPoss),
 	trials(Code, NewPoss, TT).
 
-% De recursie: De poging Trial wordt uitgevoerd en het resultaat met
-% score toegevoegd aan de lijst.
-%
-% Eerst wordt de score Score uitgerekend en samengevoegd met de poging
-% Trial. Hierna wordt hij uitgeschreven. Daarna wordt op grond van Trial
-% de niewe lijst van mogelijkheden NewPoss uitgerekend met behulp van
-% update/4. De recursie is de herhaling van trials toegepast op de
-% nieuwe lijst van mogelijkheden NewPoss. De volgende poging zal dus de
-% head van deze nieuwe lijst zijn.
-
-
-
-%------ Het uitschrijven van de resultaten
-
-% write_colors/1. Schrijft een poging met score uit. Hier simpel
-% gekozen met enkele spatie-overslag. Kan mooier, maar laten we de code
-% niet langer maken dan nodig.
-
-write_colors([]).
-write_colors([H|T]):-
-	write(' '),
-	write(H),
-	write_colors(T).
-
-
-% write_code/1. De aanhef. Het geven van de te raden code.
-
-write_code(Code):-
-	writeln('-------------------------'),
-	write_colors(Code),nl,
-	writeln('-------------------------').
-
 
 % go/0: voor een simpele aanroep van het spel.
-
 go :-
 	random_code(Code),
 	write_code(Code),
