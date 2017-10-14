@@ -3,15 +3,6 @@
 % Stefan Schenk, 11881798, stefan_schenk@hotmail.com
 
 /*
-|	Helper
-*/
-remove_all(_, [], []).
-remove_all(Element, [Element|Tail], Result) :-
-  remove_all(Element, Tail, Result).
-remove_all(Element, [Head|Tail], [Head|Result]) :-
-  remove_all(Element, Tail, Result).
-
-/*
 |-------------------------------------------------------------------------------
 | Opg 1
 |-------------------------------------------------------------------------------
@@ -68,7 +59,7 @@ scoreo(N, O) :-
 scoreo([], _, 0).
 scoreo([H|T1], T2, O) :-
 	member(H, T2),
-	remove_all(H, T2, T2N), !,
+	select(H, T2, T2N),
 	scoreo(T1, T2N, OO),
 	O is OO + 1.
 scoreo([_|T1], T2, O) :-
@@ -80,15 +71,67 @@ scoreo([_|T1], T2, O) :-
 |-------------------------------------------------------------------------------
 */
 
-% Print alle mogelijke combinaties.
+scorex_of_code(Code, N, X) :-
+	string_chars(Code, ListCode),
+	string_chars(N, NN),
+	scorex(NN, ListCode, X).
+scoreo_of_code(Code, N, O) :-
+	string_chars(Code, ListCode),
+	string_chars(N, NN),
+	scoreo(NN, ListCode, OO),
+	scorex(NN, ListCode, X),
+	O is OO - X.
+
+% Controleert of Trial dezelfde evauatie krijgt als PossibleCode de geheime
+% code was.
+equalScore(PossibleCode, Trial) :-
+	scorex(Trial, X),
+	scorex_of_code(PossibleCode, Trial, X),
+	scoreo(Trial, O),
+	scoreo_of_code(PossibleCode, Trial, O).
+
+% Voert deze controle uit voor een lijst met trials.
+equalScores(PossibleCode, [H|Trials]) :-
+	equalScore(PossibleCode, H),
+	equalScores(PossibleCode, Trials).
+
+/*
+|-------------------------------------------------------------------------------
+| Opg 4
+|-------------------------------------------------------------------------------
+*/
+
+% Kijkt of de code klopt.
+goal(PossibleCode) :-
+	code(PossibleCode), !.
+
+/*
+|-------------------------------------------------------------------------------
+| Opg 5
+|-------------------------------------------------------------------------------
+*/
+
+% Move predicaat.
+move(Visited, Number, NextNumber) :-
+	determineNextNumber(Visited, Number, NextNumber).
+
+determineNextNumber(+Lijst, +Counter, -Resultaat)
+
+/*
+|-------------------------------------------------------------------------------
+| Uitwerking van Assignment 3
+|-------------------------------------------------------------------------------
+*/
+
 all_codes(Poss) :-
 	findall(Guess, guess(Guess), Poss).
+
+% Print alle mogelijke combinaties.
 
 guess(Code) :-
     subList(5, Code, ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']).
 
 % guess/1: Neem een lijst van 4 elementen uit de lijst van alle kleuren.
-
 
 subList(0, [], _).
 subList(N, [Head|Tail], List):-
@@ -98,9 +141,6 @@ subList(N, [Head|Tail], List):-
 
 % subList/3: subList(+Number, -SubList, +List). Haal een deellijst
 % (-SubList) van +Number elementen uit een gegeven +List.
-
-
-
 
 % evaluate_trial_o registreert het aantal goede kleuren die niet goed
 % geplaatst zijn. Dit is eenvoudig te definieren als het verschil tussen
@@ -125,14 +165,6 @@ to_list(N, X, [X|T]):-
 % Administratief hulp-predicaat om de x-en o-scores in een lijst te
 % zetten.
 
-
-
-/*
-|-------------------------------------------------------------------------------
-| Opg 4
-|-------------------------------------------------------------------------------
-*/
-
 % update/4
 %
 % Arg. 1 de te raden code.
@@ -151,13 +183,6 @@ update(Code, [H|T], Trial, [H|NT]):-
 	update(Code, T, Trial, NT).
 update(Code, [_|T], Trial, L):-
 	update(Code, T, Trial, L).
-
-
-/*
-|-------------------------------------------------------------------------------
-| Opg 5
-|-------------------------------------------------------------------------------
-*/
 
 
 % trials/3: Output van pogingen met scores:
