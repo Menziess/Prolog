@@ -139,9 +139,17 @@ depthfirst_cyclefree(Visited, Node, Path) :-
   move(Visited, Node, NextNode),
   depthfirst_cyclefree([NextNode|Visited], NextNode, Path).
 
+% Print X en O scores.
+printScoreXO(Code) :-
+	scorex(Code, X),
+	scoreo(Code, O),
+	writeln(X / O).
+
 % Formatted output.
-printSolution(X) :-
-	print(X).
+printSolution([]).
+printSolution([H|T]) :-
+	write(H), write(" -- "), printScoreXO(H),
+	printSolution(T).
 
 % Aanroep solver.
 go :-
