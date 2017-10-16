@@ -3,33 +3,6 @@
 % Stefan Schenk, 11881798, stefan_schenk@hotmail.com
 
 
-
-/*
-
-  Beste Mattijs,
-
-  Bij de vorige opgave kreeg ik deze feedback:
-
-  "
-    # Opgave 4:
-    ?- primes(30).
-    Primes: [2,3,5]
-    true .
-    Dit zijn helaas niet alle priemgetallen onder de 30
-    Exit: (11) filterMultiples(5, [7, 11, 13, 17, 19, 23, 25, 29], [11, 17]) ? creep
-    De lijst rest zit wel ergens in je code maar moet nog teruggegeven. Het zou
-    fijn als dergelijk gedrag ook terug is te vinden in je commentaar.
-  "
-
-  In de opgave staat dat bij een voorbeeld met n=30; de procedure moet stoppen
-  zodra k**2 > n. Dit zorgt er dus voor dat er maar 3 priemgetallen worden
-  gevonden: 2, 3 en 5. Omdat bij k=7, k**2 >= 30.
-
-  Als ik de opdracht verkeerd heb begrepen, my bad. Maar na de opdracht opnieuw
-  gelezen te hebben, lijkt mij dat dit juist wordt gevraagd.
-
-*/
-
 /*
 |-------------------------------------------------------------------------------
 | Opg 1 - Implementeer een Prolog-predicaat random_code/1 .
