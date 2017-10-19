@@ -10,15 +10,15 @@
 
 :- ['assets/astar'].
 
-:- writeln('-------------------------').
+:- writeln('-------------------------------------------------------------').
 :- writeln('Type "go." to start').
-:- writeln('Type "go(VertrekStad, AankomstStad)" om een route te plannen').
-:- writeln('-------------------------').
+:- writeln('Type "go(VertrekStad, AankomstStad)." om een route te plannen').
+:- writeln('-------------------------------------------------------------').
 
 go :-
   go("maastricht", "enkhuizen").
 go(Vertrekstad, AankomstStad) :-
-  route(VertrekStad, AankomstStad, Route, Distance),
+  route(VertrekStad, AankomstStad, Route, Distance).
 
 % solve_astar(Node, Path/Cost) :-
 %   estimate(Node, Estimate),
@@ -26,6 +26,8 @@ go(Vertrekstad, AankomstStad) :-
 %   reverse(RevPath, Path).
 
 route(VertrekStad, AankomstStad, Route, Distance) :-
+  retractall(destination(_)),
+  assert(destination(AankomstStad)),
   writeln("do stuff").
 
 /*
@@ -34,19 +36,39 @@ route(VertrekStad, AankomstStad, Route, Distance) :-
 |-------------------------------------------------------------------------------
 */
 
-%     Stadnaam    N.B.    O.L.
-city("amsterdam"  /52.37  /4.89).
-city("breda"      /51.57  /4.77).
-city("enkhuizen"  /52.71  /5.27).
-city("enschede"   /52.22  /6.89).
-city("den helder" /52.96  /4.76).
-city("groningen"  /53.22  /6.57).
-city("haarlem"    /52.39  /4.65).
-city("hoorn"      /52.64  /5.06).
-city("rotterdam"  /51.92  /4.48).
-city("maastricht" /50.85  /5.69).
-city("roosendaal" /51.54  /4.47).
-city("utrecht"    /52.09  /5.12).
+%     Stadnaam    Latitude      Longitude
+city("amsterdam"  /52.37        /4.89).
+city("breda"      /51.57        /4.77).
+city("eindhoven"  /51.44        /5.47).
+city("enkhuizen"  /52.71        /5.27).
+city("enschede"   /52.22        /6.89).
+city("den helder" /52.96        /4.76).
+city("groningen"  /53.22        /6.57).
+city("haarlem"    /52.39        /4.65).
+city("hoorn"      /52.64        /5.06).
+city("rotterdam"  /51.92        /4.48).
+city("maastricht" /50.85        /5.69).
+city("utrecht"    /52.09        /5.12).
+
+%     Stadnaam1    Stadnaam2    Afstand
+path("den helder" /"hoorn"      /52.5 ).
+path("den helder" /"haarlem"    /76.7 ).
+path("hoorn"      /"enkhuizen"  /20.3 ).
+path("enkhuizen"  /"utrecht"    /96.2 ).
+path("amsterdam"  /"hoorn"      /44.8 ).
+path("amsterdam"  /"utrecht"    /44.0 ).
+path("amsterdam"  /"haarlem"    /17.5 ).
+path("amsterdam"  /"rotterdam"  /78.8 ).
+path("hoorn"      /"groningen"  /164.0).
+path("enschede"   /"groningen"  /148.0).
+path("utrecht"    /"breda"      /72.9 ).
+path("utrecht"    /"enschede"   /141.0).
+path("utrecht"    /"eindhoven"  /91.6 ).
+path("breda"      /"eindhoven"  /59.5 ).
+path("eindhoven"  /"maastricht" /88.7 ).
+path("eindhoven"  /"enschede"   /177.0).
+path("maastricht" /"enschede"   /241.0).
+
 
 /*
 |-------------------------------------------------------------------------------
@@ -54,8 +76,11 @@ city("utrecht"    /52.09  /5.12).
 |-------------------------------------------------------------------------------
 */
 
-estimate(X, Y) :-
-  write("").
+% Heuristische functie om afstand van laatste stad in path tot destination te
+% berekenen.
+estimate([H|Node], Estimate) :-
+  destination(Destination),
+  distance_between(H, Destination, Estimate).
 
 % Berekent hemelsbreede afstand tussen twee steden, bijvoorbeeld: de afstand
 % tussen Amsterdam en Enhuizen wordt geschat op 47,7 km.
@@ -76,11 +101,14 @@ distance(Lat1, Lon1, Lat2, Lon2, Dis) :-
 |-------------------------------------------------------------------------------
 */
 
+% move(Paths, [Path|Paths], ) :-
+
 move(X, Y, Z) :-
   write("").
 
-goal(X) :-
-  write("").
+% De ge-asserte destination moet het laatste punt zijn in de route.
+goal([Path|Paths]) :-
+  destination(Path).
 
 /*
 |-------------------------------------------------------------------------------
