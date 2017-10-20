@@ -16,19 +16,15 @@
 :- writeln('-------------------------------------------------------------').
 
 go :-
-  go("maastricht", "enkhuizen").
-go(Vertrekstad, AankomstStad) :-
-  route(VertrekStad, AankomstStad, Route, Distance).
+  go("rotterdam", "groningen").
+go(VertrekStad, AankomstStad) :-
+  route_print(VertrekStad, AankomstStad).
 
-% solve_astar(Node, Path/Cost) :-
-%   estimate(Node, Estimate),
-%   astar([[Node]/0/Estimate], RevPath/Cost/_),
-%   reverse(RevPath, Path).
-
+% Zet destination, laat astar de route en afstand bepalen.
 route(VertrekStad, AankomstStad, Route, Distance) :-
   retractall(destination(_)),
   assert(destination(AankomstStad)),
-  writeln("do stuff").
+  solve_astar(VertrekStad, Route/Distance).
 
 /*
 |-------------------------------------------------------------------------------
@@ -59,7 +55,7 @@ path("amsterdam"  /"hoorn"      /44.8 ).
 path("amsterdam"  /"utrecht"    /44.0 ).
 path("amsterdam"  /"haarlem"    /17.5 ).
 path("amsterdam"  /"rotterdam"  /78.8 ).
-path("hoorn"      /"groningen"  /164.0).
+path("den helder" /"groningen"  /155.0).
 path("enschede"   /"groningen"  /148.0).
 path("utrecht"    /"breda"      /72.9 ).
 path("utrecht"    /"enschede"   /141.0).
@@ -76,21 +72,27 @@ path("maastricht" /"enschede"   /241.0).
 |-------------------------------------------------------------------------------
 */
 
-% Heuristische functie om afstand van laatste stad in path tot destination te
+% Heuristische functie om hemelsbrede afstand van stad tot destination te
 % berekenen.
-estimate([H|Node], Estimate) :-
+estimate(City, Estimate) :-
   destination(Destination),
-  distance_between(H, Destination, Estimate).
+  distance_hemelsbreed(City, Destination, Estimate).
 
 % Berekent hemelsbreede afstand tussen twee steden, bijvoorbeeld: de afstand
 % tussen Amsterdam en Enhuizen wordt geschat op 47,7 km.
-distance_between(City1, City2, Dis) :-
+distance_hemelsbreed(City1, City2, Dis) :-
   city(City1/Lat1/Lon1),
   city(City2/Lat2/Lon2),
-  distance(Lat1, Lon1, Lat2, Lon2, Dis).
+  distance_lat_lon(Lat1, Lon1, Lat2, Lon2, Dis).
+
+% Haalt de distance uit de database.
+distance_werkelijk(City1, City2, Dis) :-
+  path(City1/City2/Dis).
+distance_werkelijk(City1, City2, Dis) :-
+  path(City2/City1/Dis).
 
 % Method to determine distance between two lat/lon coordinates.
-distance(Lat1, Lon1, Lat2, Lon2, Dis) :-
+distance_lat_lon(Lat1, Lon1, Lat2, Lon2, Dis) :-
     P is 0.017453292519943295,
     A is (0.5 - cos((Lat2 - Lat1) * P) / 2 + cos(Lat1 * P) * cos(Lat2 * P) * (1 - cos((Lon2 - Lon1) * P)) / 2),
     Dis is (12742 * asin(sqrt(A))).
@@ -101,23 +103,26 @@ distance(Lat1, Lon1, Lat2, Lon2, Dis) :-
 |-------------------------------------------------------------------------------
 */
 
-% move(Paths, [Path|Paths], ) :-
-
-move(X, Y, Z) :-
-  write("").
+% Haalt alle mogelijke steden inclusief afstand op waarnaar gereisd kan worden.
+move(From, To, Distance):-
+    distance_werkelijk(From, To, Distance).
 
 % De ge-asserte destination moet het laatste punt zijn in de route.
-goal([Path|Paths]) :-
-  destination(Path).
+goal(Goal) :-
+  destination(Goal).
 
 /*
 |-------------------------------------------------------------------------------
 | Opg 5
 |-------------------------------------------------------------------------------
-| Breda en Haarlem:
-|
-| Amsterdam en Groningen:
-|
+| Breda en Haarlem top 3:
+|   breda -> utrecht -> amsterdam -> haarlem.
+|   breda -> eindhoven -> utrecht -> amsterdam -> haarlem.
+|   breda -> utrecht -> enkhuizen -> hoorn -> amsterdam -> haarlem.
+| Amsterdam en Groningen top 3:
+|   amsterdam -> haarlem -> den helder -> groningen.
+|   amsterdam -> hoorn -> den helder -> groningen.
+|   amsterdam -> utrecht -> enschede -> groningen.
 */
 
 /*
@@ -126,4 +131,19 @@ goal([Path|Paths]) :-
 |-------------------------------------------------------------------------------
 */
 
-route_print(VertrekStad, AankomstStad).
+% Print de route uit met werkelijke afstanden tussen de steden.
+route_print(VertrekStad, AankomstStad) :-
+  route(VertrekStad, AankomstStad, Route, Distance),
+  route_print(VertrekStad, AankomstStad, Route, Distance).
+route_print(_, _, Route, Distance) :-
+  writeln(**************************************************************),
+  route_print(Route),
+  writeln(**************************************************************),
+  write("Totale afstand = "), write(Distance), writeln(" km.").
+route_print([H]) :-
+  writeln(H).
+route_print([H1, H2|T]) :-
+  distance_werkelijk(H1, H2, Distance),
+  writeln(H1),
+  write("     |  "), write(Distance), writeln(" km."),
+  route_print([H2|T]).
