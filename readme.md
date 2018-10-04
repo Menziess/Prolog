@@ -1,4 +1,4 @@
-# Prolog exercises
+# Prolog-Problem-Solving-And-Search
 
 Some quick tools to get started on windows:
 
